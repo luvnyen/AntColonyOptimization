@@ -357,7 +357,7 @@ void main() {
 		cout << "2. Add Address\n";
 		cout << "3. Remove Address\n";
 		cout << "4. Display All Address\n";
-		cout << "5. Display All Ants\n";
+		//cout << "5. Display All Ants\n";
 		cout << "6. Best Path\n";
 		cout << "0. Exit\n\n";
 
@@ -405,7 +405,7 @@ void main() {
 			system("PAUSE");
 		}
 
-		if (menu == 5) {
+		/*if (menu == 5) {
 			system("CLS");
 
 			for (int i = 0; i < ants.size(); i++)
@@ -414,7 +414,7 @@ void main() {
 			}
 
 			system("PAUSE");
-		}
+		}*/
 
 		if (menu == 6) {
 			system("CLS");
