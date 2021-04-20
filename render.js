@@ -8,78 +8,112 @@ var paper = canvas.getContext("2d");
 var mouse = {
   x: undefined,
   y: undefined,
-  click: false,
+  lclick: false,
+  rclick: false,
+  mclick: false,
 };
 
 var center = { x: 0, y: 0 };
-
 var SPACING = 10;
 var LINE_SPACING = 10;
 var ADDRESS_RADIUS = 5;
+var PREV_WINSIZE = {x:window.innerWidth,y:window.innerHeight};
+var FPSFACTOR;
+var SPEED = 0.1;
+var DISP_POS = {x:0,y:0};
+var OLD_OFFSET = {x:0,y:0};
+var MOVE_OFFSET = {x:0,y:0};
+var PAN_START= {x:0,y:0};
+var DELTA_START = false;
 
 window.addEventListener("mousemove", (event) => {
-  mouse.x = event.x;
-  mouse.y = event.y;
+  
+  if(DELTA_START){
+    MOVE_OFFSET.x = OLD_OFFSET.x+(PAN_START.x-mouse.x); 
+    MOVE_OFFSET.y = OLD_OFFSET.y+(PAN_START.y-mouse.y); 
+  }
+  mouse.x = event.x+MOVE_OFFSET.x;
+  mouse.y = event.y+MOVE_OFFSET.y;
   let truc = mouseToCoord(mouse);
-  let calc = coordToCentered(truc);
-  console.log(calc);
-  document.querySelector(".coordbox").style.transform = `translate3d(${calc.x}px,${-calc.y}px,0)`;
-  document.querySelector(".coordisp").innerHTML = `X: ${truc.x}, Y: ${truc.y}`;
+  DISP_POS = coordToCentered(truc);
+  document.querySelector(".coordisptext").innerHTML = `X: ${truc.x}, Y: ${truc.y}`;
+});
+
+window.addEventListener("contextmenu", (event) => {
+  event.preventDefault();
 });
 
 window.addEventListener("mousedown", (event) => {
-  mouse.click = true;
+  if(event.button == 0){
+    mouse.lclick = true;
+  }else if(event.button==2){
+    mouse.rclick = true;
+  }else if(event.button==1){
+    // mouse.mclick = true;
+    // PAN_START.x=mouse.x;
+    // PAN_START.y=mouse.y;
+
+    // OLD_OFFSET.x=MOVE_OFFSET.x;
+    // OLD_OFFSET.y=MOVE_OFFSET.y;
+
+    // DELTA_START = true;
+   
+  }
 });
 
 window.addEventListener("mouseup", (event) => {
-  mouse.click = false;
+  if(event.button == 0){
+    mouse.lclick = false;
+  }else if(event.button==2){
+    mouse.rclick = false;
+  }else if(event.button==1){
+    mouse.mclick = false;
+    DELTA_START = false;
+  }
 });
 
 window.addEventListener("wheel", (event) => {
   SPACING += event.deltaY * -0.05;
   LINE_SPACING += event.deltaY * -0.05;
+
   ADDRESS_RADIUS = SPACING / 2;
 
-  if (ADDRESS_RADIUS < 5) {
-    ADDRESS_RADIUS = 5;
+  if (ADDRESS_RADIUS < 1) {
+    ADDRESS_RADIUS = 1;
+  }
+  if (LINE_SPACING < 5) {
+    LINE_SPACING = 5;
+    
+  } else if (LINE_SPACING > 100) {
+    LINE_SPACING = 100;
   }
 
-  if (SPACING < 10) {
-    SPACING = 10;
-    LINE_SPACING = 10;
-  } else if (SPACING > 200) {
-    SPACING = 200;
-    LINE_SPACING = 200;
+  if (SPACING < 5) {
+    SPACING = 5;
+    
+  } else if (SPACING > 100) {
+    SPACING = 100;
   }
 });
 
-// //drawing lines
-// paper.beginPath();
-// paper.moveTo(50, 300);
-// paper.lineTo(300, 100);
-// paper.lineTo(400, 300);
-// paper.strokeStyle = "#002FFF";
-// paper.stroke();
+function getTranslate3d (el) {
+  var values = el.style.transform.split(/\w+\(|\);?/);
+  if (!values[1] || !values[1].length) {
+      return [0,0,0];
+  }
+  return values[1].split(/,\s?/g);
+}
 
-function Line(s, e, c) {
-  this.sx = s.x;
-  this.sy = s.y;
-  this.ex = e.x;
-  this.ey = e.y;
-  this.c = c;
+function updateDispPos(){
+  let curtrans = getTranslate3d(document.querySelector(".coordbox"));
+  curtrans[0] = parseFloat(curtrans[0]);
+  curtrans[1] = parseFloat(curtrans[1]);
+  curtrans[2] = parseFloat(curtrans[2]);
 
-  this.draw = () => {
-    paper.beginPath();
-    paper.moveTo(center.x + this.sx, center.y + -this.sy);
-    paper.lineTo(center.x + this.ex, center.y + -this.ey);
-    paper.strokeStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
-    paper.lineWidth = LINE_SPACING / 75;
-    paper.stroke();
-  };
+  curtrans[0] += ((DISP_POS.x- MOVE_OFFSET.x) - curtrans[0]) * SPEED;
+  curtrans[1] += ((-DISP_POS.y- MOVE_OFFSET.y) - curtrans[1]) * SPEED;
 
-  this.update = () => {
-    this.draw();
-  };
+  document.querySelector(".coordbox").style.transform = `translate3d(${curtrans[0]}px,${curtrans[1] - SPACING/20}px,0)`;
 }
 
 function mouseToCoord(mouse) {
@@ -87,26 +121,73 @@ function mouseToCoord(mouse) {
   let centeredy = -(mouse.y - center.y);
   let processedx = parseInt((((centeredx / Math.abs(centeredx)) * SPACING) / 2 + centeredx) / SPACING);
   let processedy = parseInt((((centeredy / Math.abs(centeredy)) * SPACING) / 2 + centeredy) / SPACING);
-  return { x: processedx == NaN ? 0 : processedx, y: processedy == NaN ? 0 : processedy };
+  processedx = Number.isNaN(processedx) ? 0 : processedx;
+  processedy = Number.isNaN(processedy) ? 0 : processedy;
+  return { x: processedx, y: processedy };
 }
 
 function coordToCentered(coord) {
   return { x: SPACING * coord.x, y: SPACING * coord.y };
 }
 
-function Circle(p, c) {
-  this.p = p;
+function coordToLineCentered(coord) {
+  return { x: LINE_SPACING * coord.x, y: LINE_SPACING * coord.y };
+}
+
+//draw via converted coordinate
+function Line(s, e, c) {
+  this.s = s;
+  this.ts = coordToCentered(s);
+
+  this.e = e;
+  this.te = coordToCentered(e);
+
   this.c = c;
 
   this.draw = () => {
     paper.beginPath();
-    let calc = coordToCentered(this.p);
-    paper.arc(center.x + calc.x, center.y - calc.y, ADDRESS_RADIUS, 0, 2 * Math.PI);
-    paper.fillStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
+    paper.moveTo(center.x + this.ts.x- MOVE_OFFSET.x, center.y + -this.ts.y- MOVE_OFFSET.y);
+    paper.lineTo(center.x + this.te.x- MOVE_OFFSET.x, center.y + -this.te.y- MOVE_OFFSET.y);
+    paper.strokeStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
+    paper.lineWidth = LINE_SPACING / 75;
+    paper.stroke();
+  };
+
+  this.update = () => {
+    let calcs = coordToLineCentered(this.s);
+    let calce = coordToLineCentered(this.e);
+    this.ts.x += (calcs.x - this.ts.x) * SPEED;
+    this.ts.y += (calcs.y - this.ts.y) * SPEED;
+    this.te.x += (calce.x - this.te.x) * SPEED;
+    this.te.y += (calce.y - this.te.y) * SPEED;
+    this.draw();
+  };
+}
+
+//draw via converted coordinate
+function Circle(p, c) {
+  this.p = p;
+  this.t = coordToCentered(p);
+  this.c = c;
+  this.tc = c;
+  this.r = ADDRESS_RADIUS;
+
+  this.draw = () => {
+    paper.beginPath();
+    paper.arc(center.x + this.t.x - MOVE_OFFSET.x, center.y - this.t.y- MOVE_OFFSET.y, this.r, 0, 2 * Math.PI);
+    paper.fillStyle = `rgba(${this.tc.r},${this.tc.g},${this.tc.b},${this.tc.a})`;
     paper.fill();
   };
 
   this.update = () => {
+    let calc = coordToCentered(this.p);
+    this.t.x += (calc.x - this.t.x) * SPEED;
+    this.t.y += (calc.y - this.t.y) * SPEED;
+    this.r += (ADDRESS_RADIUS - this.r) * SPEED;
+    this.tc.r += (this.c.r - this.tc.r) * SPEED;
+    this.tc.g += (this.c.g - this.tc.g) * SPEED;
+    this.tc.b += (this.c.b - this.tc.b) * SPEED;
+    this.tc.a += (this.c.a - this.tc.a) * SPEED;
     this.draw();
   };
 
@@ -115,54 +196,62 @@ function Circle(p, c) {
   };
 }
 
-var grids = [];
 function generateGrids() {
-  for (let i = -window.innerWidth; i < window.innerWidth * 2; i++) {
-    if ((i - (center.x % center.x)) % LINE_SPACING == 0) {
-      let realwidth = i - (center.x % center.x);
-      let top = -center.y * 2;
-      let bot = center.y * 2;
-      grids.push(new Line({ x: realwidth, y: -top }, { x: realwidth, y: -bot }, { r: 0, g: 0, b: 0, a: 1 }));
-    }
+  for (let i = (-window.innerWidth / SPACING)*10; i < (window.innerWidth / SPACING) * 10; i++) {
+    let realwidth = i * SPACING - (center.x % center.x);
+    let top = -center.y * 10;
+    let bot = center.y * 10;
+    grids.push(new Line(mouseToCoord({ x: realwidth, y: -top }), mouseToCoord({ x: realwidth, y: -bot }), { r: 0, g: 0, b: 0, a: 1 }));
   }
-  for (let i = -window.innerHeight; i < window.innerHeight * 2; i++) {
-    if ((i - (center.y % center.y)) % LINE_SPACING == 0) {
-      let realheight = i - (center.y % center.y);
-      let top = -center.x * 2;
-      let bot = center.x * 2;
-      grids.push(new Line({ x: top, y: -realheight }, { x: bot, y: -realheight }, { r: 0, g: 0, b: 0, a: 1 }));
-    }
+  for (let i = (-window.innerHeight / SPACING)*10; i < (window.innerHeight / SPACING) * 10; i++) {
+    let realheight = i * SPACING - (center.y % center.y);
+    let top = -center.x * 10;
+    let bot = center.x * 10;
+    grids.push(new Line(mouseToCoord({ x: top, y: -realheight }), mouseToCoord({ x: bot, y: -realheight }), { r: 0, g: 0, b: 0, a: 1 }));
   }
 }
 
+var grids = [];
 var circles = [];
-
-circles.push(new Circle({ x: 0, y: 0 }, { r: 0, g: 0, b: 0, a: 1.0 }));
-
 var circleCursor = new Circle({ x: 0, y: 0 }, { r: 0, g: 0, b: 255, a: 1.0 });
 
 function animate() {
   requestAnimationFrame(animate);
-  center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-
-  circleCursor.setPos(mouseToCoord(mouse));
-
   paper.clearRect(0, 0, innerWidth, innerHeight);
 
-  if (mouse.click) {
-    circles.push(new Circle(mouseToCoord(mouse), { r: 0, g: 0, b: 0, a: 1.0 }));
+  center = { x: (window.innerWidth / 2) - MOVE_OFFSET.x, y: (window.innerHeight / 2)- MOVE_OFFSET.y };
+  let spawncoord = mouseToCoord(mouse);
+  circleCursor.setPos(spawncoord);
+
+  if (mouse.lclick) {
+    if(circles.every(element => {return element.p.x!=spawncoord.x || element.p.y!=spawncoord.y;})){
+      circles.push(new Circle(spawncoord, { r: 0, g: 0, b: 0, a: 1.0 }));
+    }
+    circleCursor.c = { r: 255, g: 255, b: 0, a: 1.0 };
+  }else if(mouse.rclick){
+    circles = circles.filter(element => {return element.p.x!=spawncoord.x || element.p.y!=spawncoord.y;});
+    circleCursor.c = { r: 255, g: 0, b: 0, a: 1.0 };
+  }else if(mouse.mclick){
+    canvas.style.cursor = "grab";
+  }else{ 
+    canvas.style.cursor = "pointer";
+    circleCursor.c = { r: 0, g: 0, b: 255, a: 1.0 };
   }
 
-  grids = [];
-  generateGrids();
+  if(PREV_WINSIZE.x != window.innerWidth || PREV_WINSIZE.y !=window.innerHeight){
+    grids = [];
+    generateGrids();
+    PREV_WINSIZE = {x:window.innerWidth,y:window.innerHeight};
+  }
 
+  updateDispPos();
+  grids.forEach((element) => {
+    element.update();
+  });
   circles.forEach((element) => {
     element.update();
   });
   circleCursor.update();
-  grids.forEach((element) => {
-    element.update();
-  });
 }
 
 animate();
