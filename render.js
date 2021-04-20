@@ -14,67 +14,63 @@ var mouse = {
 };
 
 var center = { x: 0, y: 0 };
-var SPACING = 10;
-var LINE_SPACING = 10;
-var ADDRESS_RADIUS = 5;
-var PREV_WINSIZE = {x:window.innerWidth,y:window.innerHeight};
+var SPACING = 30;
+var LINE_SPACING = 30;
+var ADDRESS_RADIUS = 15;
+var PREV_WINSIZE = { x: window.innerWidth, y: window.innerHeight };
 var FPSFACTOR;
 var SPEED = 0.1;
-var DISP_POS = {x:0,y:0};
-var OLD_OFFSET = {x:0,y:0};
-var MOVE_OFFSET = {x:0,y:0};
-var PAN_START= {x:0,y:0};
+var DISP_POS = { x: 0, y: 0 };
+var OLD_OFFSET = { x: 0, y: 0 };
+var MOVE_OFFSET = { x: 0, y: 0 };
+var PAN_START = { x: 0, y: 0 };
 var DELTA_START = false;
 
-window.addEventListener("mousemove", (event) => {
-  
-  if(DELTA_START){
-    MOVE_OFFSET.x = OLD_OFFSET.x+(PAN_START.x-mouse.x); 
-    MOVE_OFFSET.y = OLD_OFFSET.y+(PAN_START.y-mouse.y); 
+canvas.addEventListener("mousemove", (event) => {
+  if (DELTA_START) {
+    MOVE_OFFSET.x = OLD_OFFSET.x + (PAN_START.x - mouse.x);
+    MOVE_OFFSET.y = OLD_OFFSET.y + (PAN_START.y - mouse.y);
   }
-  mouse.x = event.x+MOVE_OFFSET.x;
-  mouse.y = event.y+MOVE_OFFSET.y;
+  mouse.x = event.x + MOVE_OFFSET.x;
+  mouse.y = event.y + MOVE_OFFSET.y;
   let truc = mouseToCoord(mouse);
   DISP_POS = coordToCentered(truc);
   document.querySelector(".coordisptext").innerHTML = `X: ${truc.x}, Y: ${truc.y}`;
 });
 
-window.addEventListener("contextmenu", (event) => {
+canvas.addEventListener("contextmenu", (event) => {
   event.preventDefault();
 });
 
-window.addEventListener("mousedown", (event) => {
-  if(event.button == 0){
+canvas.addEventListener("mousedown", (event) => {
+  if (event.button == 0) {
     mouse.lclick = true;
-  }else if(event.button==2){
+  } else if (event.button == 2) {
     mouse.rclick = true;
-  }else if(event.button==1){
+  } else if (event.button == 1) {
     // mouse.mclick = true;
     // PAN_START.x=mouse.x;
     // PAN_START.y=mouse.y;
-
     // OLD_OFFSET.x=MOVE_OFFSET.x;
     // OLD_OFFSET.y=MOVE_OFFSET.y;
-
     // DELTA_START = true;
-   
   }
 });
 
-window.addEventListener("mouseup", (event) => {
-  if(event.button == 0){
+canvas.addEventListener("mouseup", (event) => {
+  if (event.button == 0) {
     mouse.lclick = false;
-  }else if(event.button==2){
+  } else if (event.button == 2) {
     mouse.rclick = false;
-  }else if(event.button==1){
+  } else if (event.button == 1) {
     mouse.mclick = false;
     DELTA_START = false;
   }
 });
 
-window.addEventListener("wheel", (event) => {
-  SPACING += event.deltaY * -0.05;
-  LINE_SPACING += event.deltaY * -0.05;
+canvas.addEventListener("wheel", (event) => {
+  SPACING += event.deltaY * -0.025;
+  LINE_SPACING += event.deltaY * -0.025;
 
   ADDRESS_RADIUS = SPACING / 2;
 
@@ -83,37 +79,35 @@ window.addEventListener("wheel", (event) => {
   }
   if (LINE_SPACING < 5) {
     LINE_SPACING = 5;
-    
   } else if (LINE_SPACING > 100) {
     LINE_SPACING = 100;
   }
 
   if (SPACING < 5) {
     SPACING = 5;
-    
   } else if (SPACING > 100) {
     SPACING = 100;
   }
 });
 
-function getTranslate3d (el) {
+function getTranslate3d(el) {
   var values = el.style.transform.split(/\w+\(|\);?/);
   if (!values[1] || !values[1].length) {
-      return [0,0,0];
+    return [0, 0, 0];
   }
   return values[1].split(/,\s?/g);
 }
 
-function updateDispPos(){
+function updateDispPos() {
   let curtrans = getTranslate3d(document.querySelector(".coordbox"));
   curtrans[0] = parseFloat(curtrans[0]);
   curtrans[1] = parseFloat(curtrans[1]);
   curtrans[2] = parseFloat(curtrans[2]);
 
-  curtrans[0] += ((DISP_POS.x- MOVE_OFFSET.x) - curtrans[0]) * SPEED;
-  curtrans[1] += ((-DISP_POS.y- MOVE_OFFSET.y) - curtrans[1]) * SPEED;
+  curtrans[0] += (DISP_POS.x - MOVE_OFFSET.x - curtrans[0]) * SPEED;
+  curtrans[1] += (-DISP_POS.y - MOVE_OFFSET.y - curtrans[1]) * SPEED;
 
-  document.querySelector(".coordbox").style.transform = `translate3d(${curtrans[0]}px,${curtrans[1] - SPACING/20}px,0)`;
+  document.querySelector(".coordbox").style.transform = `translate3d(${curtrans[0]}px,${curtrans[1] - SPACING / 20}px,0)`;
 }
 
 function mouseToCoord(mouse) {
@@ -135,21 +129,20 @@ function coordToLineCentered(coord) {
 }
 
 //draw via converted coordinate
-function Line(s, e, c) {
+function Line(s, e, c, w = 1) {
   this.s = s;
   this.ts = coordToCentered(s);
-
   this.e = e;
   this.te = coordToCentered(e);
-
   this.c = c;
+  this.w = w;
 
   this.draw = () => {
     paper.beginPath();
-    paper.moveTo(center.x + this.ts.x- MOVE_OFFSET.x, center.y + -this.ts.y- MOVE_OFFSET.y);
-    paper.lineTo(center.x + this.te.x- MOVE_OFFSET.x, center.y + -this.te.y- MOVE_OFFSET.y);
+    paper.moveTo(center.x + this.ts.x - MOVE_OFFSET.x, center.y + -this.ts.y - MOVE_OFFSET.y);
+    paper.lineTo(center.x + this.te.x - MOVE_OFFSET.x, center.y + -this.te.y - MOVE_OFFSET.y);
     paper.strokeStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
-    paper.lineWidth = LINE_SPACING / 75;
+    paper.lineWidth = (LINE_SPACING / 75) * this.w;
     paper.stroke();
   };
 
@@ -174,7 +167,7 @@ function Circle(p, c) {
 
   this.draw = () => {
     paper.beginPath();
-    paper.arc(center.x + this.t.x - MOVE_OFFSET.x, center.y - this.t.y- MOVE_OFFSET.y, this.r, 0, 2 * Math.PI);
+    paper.arc(center.x + this.t.x - MOVE_OFFSET.x, center.y - this.t.y - MOVE_OFFSET.y, this.r, 0, 2 * Math.PI);
     paper.fillStyle = `rgba(${this.tc.r},${this.tc.g},${this.tc.b},${this.tc.a})`;
     paper.fill();
   };
@@ -197,13 +190,13 @@ function Circle(p, c) {
 }
 
 function generateGrids() {
-  for (let i = (-window.innerWidth / SPACING)*10; i < (window.innerWidth / SPACING) * 10; i++) {
+  for (let i = (-window.innerWidth / SPACING) * 10; i < (window.innerWidth / SPACING) * 10; i++) {
     let realwidth = i * SPACING - (center.x % center.x);
     let top = -center.y * 10;
     let bot = center.y * 10;
     grids.push(new Line(mouseToCoord({ x: realwidth, y: -top }), mouseToCoord({ x: realwidth, y: -bot }), { r: 0, g: 0, b: 0, a: 1 }));
   }
-  for (let i = (-window.innerHeight / SPACING)*10; i < (window.innerHeight / SPACING) * 10; i++) {
+  for (let i = (-window.innerHeight / SPACING) * 10; i < (window.innerHeight / SPACING) * 10; i++) {
     let realheight = i * SPACING - (center.y % center.y);
     let top = -center.x * 10;
     let bot = center.x * 10;
@@ -212,6 +205,7 @@ function generateGrids() {
 }
 
 var grids = [];
+var lines = [];
 var circles = [];
 var circleCursor = new Circle({ x: 0, y: 0 }, { r: 0, g: 0, b: 255, a: 1.0 });
 
@@ -219,33 +213,61 @@ function animate() {
   requestAnimationFrame(animate);
   paper.clearRect(0, 0, innerWidth, innerHeight);
 
-  center = { x: (window.innerWidth / 2) - MOVE_OFFSET.x, y: (window.innerHeight / 2)- MOVE_OFFSET.y };
+  center = { x: window.innerWidth / 2 - MOVE_OFFSET.x, y: window.innerHeight / 2 - MOVE_OFFSET.y };
   let spawncoord = mouseToCoord(mouse);
   circleCursor.setPos(spawncoord);
 
   if (mouse.lclick) {
-    if(circles.every(element => {return element.p.x!=spawncoord.x || element.p.y!=spawncoord.y;})){
+    if (
+      circles.every((element) => {
+        return element.p.x != spawncoord.x || element.p.y != spawncoord.y;
+      })
+    ) {
       circles.push(new Circle(spawncoord, { r: 0, g: 0, b: 0, a: 1.0 }));
     }
-    circleCursor.c = { r: 255, g: 255, b: 0, a: 1.0 };
-  }else if(mouse.rclick){
-    circles = circles.filter(element => {return element.p.x!=spawncoord.x || element.p.y!=spawncoord.y;});
+    circleCursor.c = { r: 0, g: 255, b: 0, a: 1.0 };
+
+    //test line print
+    lines = [];
+    circles.forEach((element, index) => {
+      if (circles.length > 1 && index < circles.length-1) {
+        lines.push(new Line(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
+      }
+    });
+    ///
+  } else if (mouse.rclick) {
+    circles = circles.filter((element) => {
+      return element.p.x != spawncoord.x || element.p.y != spawncoord.y;
+    });
     circleCursor.c = { r: 255, g: 0, b: 0, a: 1.0 };
-  }else if(mouse.mclick){
+
+    //test line print
+    lines = [];
+    circles.forEach((element, index) => {
+      if (circles.length > 1 && index < circles.length-1) {
+        lines.push(new Line(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
+      }
+    });
+    ///
+
+  } else if (mouse.mclick) {
     canvas.style.cursor = "grab";
-  }else{ 
+  } else {
     canvas.style.cursor = "pointer";
     circleCursor.c = { r: 0, g: 0, b: 255, a: 1.0 };
   }
 
-  if(PREV_WINSIZE.x != window.innerWidth || PREV_WINSIZE.y !=window.innerHeight){
+  if (PREV_WINSIZE.x != window.innerWidth || PREV_WINSIZE.y != window.innerHeight) {
     grids = [];
     generateGrids();
-    PREV_WINSIZE = {x:window.innerWidth,y:window.innerHeight};
+    PREV_WINSIZE = { x: window.innerWidth, y: window.innerHeight };
   }
 
   updateDispPos();
   grids.forEach((element) => {
+    element.update();
+  });
+  lines.forEach((element) => {
     element.update();
   });
   circles.forEach((element) => {
