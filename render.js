@@ -18,7 +18,6 @@ var SPACING = 30;
 var LINE_SPACING = 30;
 var ADDRESS_RADIUS = 15;
 var PREV_WINSIZE = { x: window.innerWidth, y: window.innerHeight };
-var FPSFACTOR;
 var SPEED = 0.1;
 var DISP_POS = { x: 0, y: 0 };
 var OLD_OFFSET = { x: 0, y: 0 };
@@ -88,6 +87,11 @@ canvas.addEventListener("wheel", (event) => {
   } else if (SPACING > 100) {
     SPACING = 100;
   }
+});
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 });
 
 function getTranslate3d(el) {
@@ -204,11 +208,6 @@ function generateGrids() {
   }
 }
 
-var grids = [];
-var lines = [];
-var circles = [];
-var circleCursor = new Circle({ x: 0, y: 0 }, { r: 0, g: 0, b: 255, a: 1.0 });
-
 function animate() {
   requestAnimationFrame(animate);
   paper.clearRect(0, 0, innerWidth, innerHeight);
@@ -218,37 +217,13 @@ function animate() {
   circleCursor.setPos(spawncoord);
 
   if (mouse.lclick) {
-    if (
-      circles.every((element) => {
-        return element.p.x != spawncoord.x || element.p.y != spawncoord.y;
-      })
-    ) {
-      circles.push(new Circle(spawncoord, { r: 0, g: 0, b: 0, a: 1.0 }));
-    }
+    clearRoute();
+    addCityNode(spawncoord);
     circleCursor.c = { r: 0, g: 255, b: 0, a: 1.0 };
-
-    //test line print
-    lines = [];
-    circles.forEach((element, index) => {
-      if (circles.length > 1 && index < circles.length-1) {
-        lines.push(new Line(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
-      }
-    });
-    ///
   } else if (mouse.rclick) {
-    circles = circles.filter((element) => {
-      return element.p.x != spawncoord.x || element.p.y != spawncoord.y;
-    });
+    clearRoute();
+    removeCityNode(spawncoord);
     circleCursor.c = { r: 255, g: 0, b: 0, a: 1.0 };
-
-    //test line print
-    lines = [];
-    circles.forEach((element, index) => {
-      if (circles.length > 1 && index < circles.length-1) {
-        lines.push(new Line(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
-      }
-    });
-    ///
 
   } else if (mouse.mclick) {
     canvas.style.cursor = "grab";
@@ -267,7 +242,7 @@ function animate() {
   grids.forEach((element) => {
     element.update();
   });
-  lines.forEach((element) => {
+  paths.forEach((element) => {
     element.update();
   });
   circles.forEach((element) => {
@@ -276,10 +251,3 @@ function animate() {
   circleCursor.update();
 }
 
-animate();
-generateGrids();
-
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});

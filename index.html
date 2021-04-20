@@ -1,116 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400;1,600;1,700;1,800&display=swap" rel="stylesheet" />
     <title>UTS Kecerdasan Buatan - ACO</title>
     <style>
-        *{
-            border: 0;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-        
-        body{
-            position: fixed;
-            width: 100vw;
-            height: 100vh;
-            background-color: #111111;
-        }
+      * {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        font-family: "Open Sans", sans-serif;
+        line-height: 0.85em;
 
-        .canvas-container{
-            position:  absolute;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            cursor: pointer;
-        }
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
 
-        .display{
-            width: 100%;
-            height: 100%;
-        }
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+        overflow: hidden;
+      }
 
-        .coordoverlay{
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            top: 0;
-            left: 0;
-            display: grid;
-            place-items: center;
-            pointer-events: none;
+      body {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        background-color: #111111;
+      }
 
-        }
+      .canvas-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        cursor: pointer;
+      }
 
-        .coordbox{
-            position: relative;
-            width: 100px;
-            height: 100px;
+      .display {
+        width: 100%;
+        height: 100%;
+      }
 
-        }
+      .coordoverlay {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
 
-        .coordispbase{
-            position: absolute;
-            top:10%;
-            left:0;
-            width: calc(100% - 2px);
-            height: 25%;
-            display: grid;
-            place-items: center;
-            background-color: rgb(255, 238, 208);
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 7px;
-            border-color: black;
-            border-width: 1px;
-            border-style: solid;
-        }
-        .coordisptext{
-            position: absolute;
-            top:10%;
-            left:0;
-            width: 100%;
-            height: calc(25% + 2px);
-            display: grid;
-            place-items: center;
-            font-size: 14px;
-            font-weight: 600;
+      .coordbox {
+        position: relative;
+        width: 100px;
+        height: 100px;
+      }
 
-        }
-        .coordtri{
-            position: absolute;
-            width: 10%;
-            height: 10%;
-            background-color: rgb(255, 238, 208);
-            transform: translate3d(-50%,calc(-50% + 2px),0) rotate(45deg);
-            left: 50%;
-            top: 35%;
-            border-color: black;
-            border-bottom-width: 1px;
-            border-right-width: 1px;
-            border-style: solid;
-        }
+      .coordispbase {
+        position: absolute;
+        top: 10%;
+        left: 0;
+        width: calc(100% - 2px);
+        height: 25%;
+        display: grid;
+        place-items: center;
+        background-color: rgb(255, 238, 208);
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 7px;
+        border-color: black;
+        border-width: 1px;
+        border-style: solid;
+      }
+      .coordisptext {
+        position: absolute;
+        top: 10%;
+        left: 0;
+        width: 100%;
+        height: calc(25% + 2px);
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .coordtri {
+        position: absolute;
+        width: 10%;
+        height: 10%;
+        background-color: rgb(255, 238, 208);
+        transform: translate3d(-50%, calc(-50% + 2px), 0) rotate(45deg);
+        left: 50%;
+        top: 35%;
+        border-color: black;
+        border-bottom-width: 1px;
+        border-right-width: 1px;
+        border-style: solid;
+      }
 
+      .menuoverlay {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        place-items: center;
+        pointer-events: none;
+        transform: scale(1.1);
+        opacity: 0;
+        transition: transform 0.3s, opacity 0.3s;
+      }
+
+      .ham-active .menuoverlay {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      .clearallbutton {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        pointer-events: auto;
+        font-size: 30px;
+        font-weight: 400;
+        bottom: 25px;
+        left: 25px;
+        background-color: #ff2f2f;
+        color: white;
+        padding: 7px;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+
+      .clearroutebutton {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        pointer-events: auto;
+        font-size: 30px;
+        font-weight: 400;
+        bottom: 25px;
+        right: 25px;
+        background-color: #ff2f2f;
+        padding: 7px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+
+      .addmultbutton {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        pointer-events: auto;
+        font-size: 30px;
+        font-weight: 400;
+        top: 25px;
+        right: 25px;
+        background-color: #5b5dff;
+        padding: 7px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+
+      .calculatebutton {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        pointer-events: auto;
+        font-size: 50px;
+        font-weight: 400;
+        bottom: 25px;
+        left: 50vw;
+        transform: translate3d(-50%, 0, 0);
+        background-color: #00a545;
+        padding: 10px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+
+      .hamburgeroverlay {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .hamburger {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 25px;
+        width: 40px;
+        height: 40px;
+        pointer-events: auto;
+      }
+
+      .hamburger-inner {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        grid-template-rows: auto auto auto;
+        cursor: pointer;
+      }
+
+      .hamburger-1 {
+        width: 100%;
+        height: 33.33333333%;
+        background-color: black;
+        transform-origin: left center;
+        transition: transform 0.3s;
+      }
+
+      .hamburger-2 {
+        width: 100%;
+        height: 33.33333333%;
+        background-color: black;
+        transition: opacity 0.3s;
+      }
+
+      .hamburger-3 {
+        width: 100%;
+        height: 33.33333333%;
+        background-color: black;
+        transform-origin: left center;
+        transition: transform 0.3s;
+      }
+
+      .ham-active .hamburger-1 {
+        transform: translate3d(6px, 0, 0) rotate(43deg);
+      }
+      .ham-active .hamburger-2 {
+        opacity: 0;
+      }
+      .ham-active .hamburger-3 {
+        transform: translate3d(6px, 0, 0) rotate(-43deg);
+      }
+
+      .addcitiesoverlay {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+        transition: opacity 0.3s, transform 0.3s;
+        transform: scale(1.1);
+        opacity: 0;
+      }
+      .addcitiesblocker {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.4);
+        transition: opacity 0.3s;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .add-open .addcitiesoverlay{
+        transform: scale(1);
+        opacity: 1;
+      }
+      .add-open .addcitiesbox{
+        pointer-events: auto;
+      }
+
+      .add-open .addcitiesblocker{
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .addcitiesbox {
+        position: relative;
+        width: 500px;
+        height: 500px;
+        background-color: white;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        grid-template-rows: 20% auto 20%;
+      }
+      .addcitiesbutton {
+        display: grid;
+        place-items: center;
+        font-size: 25px;
+        font-weight: 400;
+        background-color: #5b5dff;
+        padding: 7px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }.importcitiesbutton {
+        display: grid;
+        place-items: center;
+        font-size: 25px;
+        font-weight: 400;
+        background-color: rgb(28,104,65);
+        padding: 7px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+      .addcitieslist {
+        position: relative;
+        overflow-y: auto;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+      }
+      .newcity {
+        position: relative;
+        height: 20%;
+        background-color: rgb(180, 255, 251);
+        display: grid;
+        place-items: center;
+        grid-template-columns: 40% 40% 20%;
+      }
+      .newcity input {
+        width: 60px;
+        height: 30px;
+        font-size: 20px;
+        font-weight: 600;
+        border-radius: 5px;
+      }
+      .newcity-xplace {
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+      }
+      .newcity-yplace {
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+      }
+      .newcity-cancel {
+        font-size: 30px;
+        cursor: pointer;
+      }
+      .addcitiestop{
+          width: 100%;
+        display: grid;
+        place-items: center;
+        grid-template-columns: 49.5%  1% 49.5%;
+      }
+      .addcitiesbottom{
+          width: 100%;
+        display: grid;
+        place-items: center;
+        grid-template-columns: 50% 50%;
+      }
+      .addnewbutton {
+        display: grid;
+        place-items: center;
+        font-size: 25px;
+        font-weight: 400;
+        background-color: #00a545;
+        padding: 7px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }
+
+      .cancelnewbutton {
+        display: grid;
+        place-items: center;
+        font-size: 25px;
+        font-weight: 400;
+        background-color: #ff0000;
+        padding: 7px;
+        color: white;
+        border-radius: 7px;
+        cursor: pointer;
+      }
     </style>
+  </head>
 
-</head>
-
-<body>
+  <body>
     <div class="canvas-container">
-        <canvas class="display"></canvas>
+      <canvas class="display"></canvas>
     </div>
     <div class="coordoverlay">
-        <div class="coordbox">
-            <div class="coordispbase"></div>
-            <div class="coordtri"></div>
-            <div class="coordisptext">X: 0, Y: 0</div>
-        </div>
+      <div class="coordbox">
+        <div class="coordispbase"></div>
+        <div class="coordtri"></div>
+        <div class="coordisptext">X: 0, Y: 0</div>
+      </div>
     </div>
+    <div class="menuoverlay">
+      <div class="clearallbutton" onclick="clearAll()">Clear All</div>
+      <div class="clearroutebutton" onclick="clearRoute()">Clear Route</div>
+      <div class="addmultbutton" onclick="openAddCities()">Add Cities</div>
+      <div class="calculatebutton" onclick="calculate()">Calculate!</div>
+    </div>
+    <div class="hamburgeroverlay">
+      <div class="hamburger" onclick="toggleNavbar()">
+        <div class="hamburger-inner">
+          <div class="hamburger-line hamburger-1"></div>
+          <div class="hamburger-line hamburger-2"></div>
+          <div class="hamburger-line hamburger-3"></div>
+        </div>
+      </div>
+    </div>
+    <div class="addcitiesblocker" onclick="closeAddCities()"></div>
+    <div class="addcitiesoverlay">
+      <div class="addcitiesbox">
+        <div class="addcitiestop" >
+            <div class="addcitiesbutton" onclick="newCitiesElement()">
+                Add New City
+            </div>
+            <input class="inputfilecatcher" onchange="importExcel(this)" type="file" style="visibility:hidden" accept=".xlsx" />
+            <div class="importcitiesbutton" onclick="document.querySelector('.inputfilecatcher').click()">
+                Import Excel
+            </div>
+        </div>
+        <div class="addcitieslist"></div>
+        <div class="addcitiesbottom">
+            <div class="addnewbutton" onclick="addCitiesToList()">
+                Add
+            </div>
+            <div class="cancelnewbutton" onclick="closeAddCities()">
+                Cancel
+            </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js" integrity="sha512-DPjFYmSXYGB7/5k/Z4h5iw1i29Vl//jj3I7v79DRy+T0o4KssDku6Hf7ImlIV87KmNIh+euT5H0LJhQmTnbC/A==" crossorigin="anonymous"></script>
     <script src="./render.js"></script>
     <script src="./algorithm.js"></script>
-</body>
-
+    <script src="./main.js"></script>
+  </body>
 </html>
