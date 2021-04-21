@@ -262,11 +262,21 @@ float calculateProbability(int origin_address, int destination_address, vector<v
 	return pow(pheromoneMatrix[origin_address][destination_address], alpha) * pow(1 / euclideanDistance(address[origin_address].getOrdinat(), address[origin_address].getAbsis(), address[destination_address].getOrdinat(), address[destination_address].getAbsis()), beta);
 }
 
-int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAddressIndex) {
-	float randNumber = (float)rand() / RAND_MAX, offset = 0;
+float getTotalProbabilityPercentage(vector<float> probabilityPercentage) {
+	float total = 0;
 	for (int i = 0; i < probabilityPercentage.size(); i++)
 	{
-		offset += probabilityPercentage[i];
+		total += probabilityPercentage[i];
+	}
+	return total;
+}
+
+int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAddressIndex) {
+	float randNumber = (float)rand() / RAND_MAX, offset = 0;
+	float totalProbabilityPercentage = getTotalProbabilityPercentage(probabilityPercentage);
+	for (int i = 0; i < probabilityPercentage.size(); i++)
+	{
+		offset += (probabilityPercentage[i] / totalProbabilityPercentage);
 		if (offset > randNumber) {
 			return probabilityAddressIndex[i];
 		}
