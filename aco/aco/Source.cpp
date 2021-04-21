@@ -69,7 +69,7 @@ public:
 		travelledAddress.clear();
 	}
 	bool samePath(int origin_address, int destination_address) {
-		for (int i = 0; i < travelledAddress.size(); i++)
+		for (int i = 0; i < travelledAddress.size() - 1; i++)
 		{
 			if (travelledAddress[i] == origin_address && travelledAddress[i + 1] == destination_address) {
 				return true;
@@ -192,12 +192,23 @@ void addressInitialization(vector<Address>& address) {
 	address.push_back(Address(18, -24, 1, false, "AD"));
 }
 
-void antInitialization(vector<Address>& address, vector<Ant>& ants) {
+void antsInitialization(vector<Address>& address, vector<Ant>& ants) {
 	Ant newAnt;
 	// menaruh semut di tiap address
 	for (int i = 0; i < address.size(); i++)
 	{
 		ants.push_back(newAnt);
+		ants[i].addTravelledAddress(i);
+	}
+}
+
+void antsReset(vector<Address>& address, vector<Ant>& ants) {
+	for (int i = 0; i < ants.size(); i++)
+	{
+		ants[i].clearTravelledAddress();
+	}
+	for (int i = 0; i < address.size(); i++)
+	{
 		ants[i].addTravelledAddress(i);
 	}
 }
@@ -216,10 +227,10 @@ void initializePheromoneMatrix(vector<Address> address, vector<vector<int>>& phe
 			else {
 				temp.push_back(0);
 			}
-			cout << "[" << temp[j] << "]";
+			//cout << "[" << temp[j] << "]";
 		}
 		pheromoneMatrix.push_back(temp);
-		cout << endl;
+		//cout << endl;
 	}
 }
 
@@ -251,9 +262,17 @@ float calculateProbability(int origin_address, int destination_address, vector<v
 	return pow(pheromoneMatrix[origin_address][destination_address], alpha) * pow(1 / euclideanDistance(address[origin_address].getOrdinat(), address[origin_address].getAbsis(), address[destination_address].getOrdinat(), address[destination_address].getAbsis()), beta);
 }
 
-int roulleteWheel(vector<float> probabilityPercentage) {
-	float randNumber = (float)rand() / RAND_MAX;
-	vector<float> temp;
+int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAddressIndex) {
+	float randNumber = (float)rand() / RAND_MAX, offset = 0;
+	for (int i = 0; i < probabilityPercentage.size(); i++)
+	{
+		offset += probabilityPercentage[i];
+		if (offset > randNumber) {
+			return probabilityAddressIndex[i];
+		}
+	}
+	return -1;
+	/*vector<float> temp;
 	for (int i = 0; i < probabilityPercentage.size(); i++)
 	{
 		if (i == 0) {
@@ -273,6 +292,7 @@ int roulleteWheel(vector<float> probabilityPercentage) {
 			}
 		}
 	}
+	return -1;*/
 }
 
 float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float evaporate) {
@@ -282,11 +302,7 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 
 	for (int x = 0; x < iteration; x++)
 	{
-		// reset semut
-		for (int i = 0; i < ants.size(); i++)
-		{
-			ants[i].clearTravelledAddress();
-		}
+		antsReset(address, ants);
 
 		int count = 0;
 		while (count != 30) {
@@ -296,13 +312,16 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 				vector<int> probabilityAddressIndex;
 				for (int j = 0; j < address.size(); j++) {
 					if (j != ants[i].getStartingAddress() && ants[i].checkTravelledAddress(j) == false) {
+						cout << x << " " << count << " " << i << " " << j << endl;
 						probabilityPercentage.push_back(calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address));
 						probabilityAddressIndex.push_back(j);
 					}
 				}
-				ants[i].addTravelledAddress(probabilityAddressIndex[roulleteWheel(probabilityPercentage)]);
-				count++;
+				cout << "done1\n";
+				ants[i].addTravelledAddress(roulleteWheel(probabilityPercentage, probabilityAddressIndex));
+				cout << "done2\n";
 			}
+			count++;
 		}
 
 		// setelah selesai iterasi per semut, dicari cost semut yang paling terkecil
@@ -348,6 +367,7 @@ void main() {
 	vector<Ant> ants;
 
 	addressInitialization(address);
+	//antsInitialization(address, ants);
 
 	while (1) {
 		system("CLS");
@@ -357,7 +377,7 @@ void main() {
 		cout << "2. Add Address\n";
 		cout << "3. Remove Address\n";
 		cout << "4. Display All Address\n";
-		//cout << "5. Display All Ants\n";
+		cout << "5. Display All Ants\n";
 		cout << "6. Best Path\n";
 		cout << "0. Exit\n\n";
 
@@ -405,7 +425,7 @@ void main() {
 			system("PAUSE");
 		}
 
-		/*if (menu == 5) {
+		if (menu == 5) {
 			system("CLS");
 
 			for (int i = 0; i < ants.size(); i++)
@@ -414,7 +434,7 @@ void main() {
 			}
 
 			system("PAUSE");
-		}*/
+		}
 
 		if (menu == 6) {
 			system("CLS");
@@ -430,7 +450,7 @@ void main() {
 					system("PAUSE");
 				}
 			}
-			antInitialization(address, ants);
+			antsInitialization(address, ants);
 			cout << beginACO(ants, address, iteration, evaporate);
 
 			system("PAUSE");
