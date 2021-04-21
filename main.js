@@ -33,6 +33,7 @@ function toggleNavbar() {
 function clearAll() {
   circles = [];
   paths = [];
+  MOVE_OFFSET = {x:0 , y:0};
 }
 
 function calculate() {
@@ -82,7 +83,6 @@ function newCitiesElementData(x, y) {
 </div>`;
   let parser = new DOMParser();
   let newelement = parser.parseFromString(newelementstr, "text/html").querySelector(".newcity");
-  console.log(x,y);
   newelement.querySelector(".inputnewx").value = x;
   newelement.querySelector(".inputnewy").value = y;
   document.querySelector(".addcitieslist").append(newelement);
@@ -97,7 +97,8 @@ function importExcel(handle) {
       var workbook = new ExcelJS.Workbook();
       workbook.xlsx.load(arrayBuffer).then((workbook) => {
         workbook.worksheets[0].eachRow((row) => {
-          newCitiesElementData(parseInt(row.values[1]), parseInt(row.values[2]) );
+          if(Number.isInteger(row.values[1] )&& Number.isInteger(row.values[2]))
+            newCitiesElementData(parseInt(row.values[1]), parseInt(row.values[2]));
         });
       });
     };
@@ -107,11 +108,40 @@ function importExcel(handle) {
 
 function addCitiesToList() {
   let data = document.querySelectorAll(".newcity");
-  data.forEach((element) => {
+  let min = {x:0,y:0};
+  let max = {x:0,y:0};
+  data.forEach((element,index) => {
     let xd = element.querySelector(".inputnewx");
     let yd = element.querySelector(".inputnewy");
-    if (xd.checkValidity() && yd.checkValidity()) addCityNode({ x: parseInt(xd.value), y: parseInt(yd.value) });
+    if (xd.checkValidity() && yd.checkValidity()) {
+      xd = parseInt(xd.value)
+      yd = parseInt(yd.value)
+      addCityNode({ x:xd, y: yd });
+      if(index == 0){
+        min = {x: xd , y: yd};
+        max = {x: xd , y: yd};
+      }else{
+        if(xd < min.x){
+          min.x = xd;
+        }
+        if(xd > max.x){
+          max.x = xd;
+        }
+        if(yd < min.y){
+          min.y = yd;
+        }
+        if(yd > max.y){
+          max.y = yd;
+        }
+      }
+    }
   });
+  if(data.length > 0){
+    let midx = min.x + (max.x - min.x)/2;
+    let midy = min.x + (max.y - min.y)/2;
+    console.log(midx,midy);
+    MOVE_OFFSET = {x: midx, y: midy};
+  }
   closeAddCities();
 }
 
