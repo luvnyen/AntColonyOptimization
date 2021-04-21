@@ -25,16 +25,15 @@
         -khtml-user-drag: none;
         -moz-user-drag: none;
         -o-user-drag: none;
-        user-drag: none;
+        /* user-drag: none; */
         overflow: hidden;
       }
       *:focus {
-          outline: none;
+        outline: none;
       }
-      input[type=number]::-webkit-inner-spin-button {
-          opacity: 1
+      input[type="number"]::-webkit-inner-spin-button {
+        opacity: 1;
       }
-
 
       body {
         position: fixed;
@@ -143,7 +142,7 @@
         left: 25px;
         background-color: #ff2f2f;
         color: white;
-        padding: 7px;
+        padding: 15px;
         border-radius: 7px;
         cursor: pointer;
       }
@@ -161,7 +160,7 @@
         bottom: 25px;
         right: 25px;
         background-color: #ff2f2f;
-        padding: 7px;
+        padding: 15px;
         color: white;
         border-radius: 7px;
         cursor: pointer;
@@ -180,7 +179,7 @@
         top: 25px;
         right: 25px;
         background-color: #5b5dff;
-        padding: 7px;
+        padding: 15px;
         color: white;
         border-radius: 7px;
         cursor: pointer;
@@ -191,7 +190,8 @@
 
       .calculatebutton {
         display: grid;
-        width: 450px;        
+        width: 500px;
+        height: 75px;
         place-items: center;
         position: absolute;
         pointer-events: none;
@@ -200,13 +200,12 @@
         background-color: #00a545;
         padding: 20px 15px;
         border-radius: 7px;
-        grid-template-columns: 50% 7% 43%;
+        grid-template-columns: 50% 7% 40%;
         transform: translate3d(-50%, 0, 0) scale(1);
         opacity: 1;
         transition: transform 0.3s, opacity 0.3s;
       }
 
-      
       .calculatetext {
         display: grid;
         place-items: center;
@@ -222,7 +221,7 @@
         cursor: pointer;
       }
 
-      .calculateaddti input{
+      .calculateaddti input {
         position: absolute;
         right: 0;
         width: 60px;
@@ -234,23 +233,25 @@
         text-align: center;
       }
 
-      .iterationcount,.evaporationval{
+      .iterationcount,
+      .evaporationval,
+      .antcount {
         position: relative;
-        width: 100%; 
+        width: 100%;
         height: 100%;
         display: flex;
         align-items: center;
       }
 
-      .calculateaddti{
-        width: 100%; 
+      .calculateaddti {
+        width: 100%;
         height: 100%;
         position: relative;
         color: white;
         font-size: 20px;
         display: grid;
         place-items: center;
-        grid-template-rows: 50% 50%;
+        grid-template-rows: 33.33333333% 33.3333333333% 33.3333333%;
       }
 
       .ham-active .calculatebutton {
@@ -466,8 +467,8 @@
 
       .resultarea {
         position: absolute;
-        width: 480px;
-        height: 83px;
+        width: 500px;
+        height: 75px;
         display: grid;
         place-items: center;
         pointer-events: none;
@@ -476,26 +477,126 @@
         background-color: rgb(0, 174, 255);
         color: white;
         font-size: 25px;
+        grid-template-columns: 30% 30% 40%;
         font-weight: 600;
         border-radius: 7px;
         transform: translate3d(-50%, 0, 0) scale(1.1);
         opacity: 0;
+        padding: 20px 15px;
         transition: transform 0.3s, opacity 0.3s;
       }
 
-      .calculated .resultarea{
-        pointer-events: auto;
-        opacity: 1;
-        transform:translate3d(-50%, 0, 0) scale(1);
+      .resultdist {
+        display: grid;
+        place-items: center;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        color: white;
+        cursor: pointer;
       }
 
-      .calculated .calculatebutton{
+      .resultspacer {
+        display: flex;
+        align-items: center;
+        position: relative;
+        left: 13%;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        color: white;
+      }
+
+      .resultaddti .output {
+        position: absolute;
+        right: 0;
+        width: 60px;
+        font-size: 20px;
+        float: right;
+        background-color: transparent;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      .iterationresult,
+      .evaporationresult,
+      .antresult {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+
+      .resultaddti {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        color: white;
+        font-size: 20px;
+        display: grid;
+        place-items: center;
+        grid-template-rows: 33.33333333% 33.3333333333% 33.3333333%;
+      }
+
+      .loadingarea {
+        position: absolute;
+        width: 500px;
+        height: 75px;
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+        bottom: 25px;
+        left: 50vw;
+        background-color: rgb(43, 255, 0);
+        color: white;
+        font-size: 25px;
+        font-weight: 600;
+        border-radius: 7px;
+        transform: translate3d(-50%, 0, 0) scale(1.1);
+        opacity: 0;
+        padding: 20px 15px;
+        transition: transform 0.3s, opacity 0.3s;
+        font-size: 55px;
+      }
+
+      .calculating .resultarea {
         pointer-events: none;
         opacity: 0;
-        transform:translate3d(-50%, 0, 0) scale(0.9);
+        transform: translate3d(-50%, 0, 0) scale(1.1);
       }
 
+      .calculating .loadingarea {
+        pointer-events: auto;
+        transform: translate3d(-50%, 0, 0) scale(1);
+        opacity: 1;
+      }
 
+      .calculating .calculatebutton {
+        pointer-events: none;
+        opacity: 0;
+        transform: translate3d(-50%, 0, 0) scale(0.9);
+      }
+
+      .calculated.calculating .resultarea {
+        pointer-events: auto;
+        opacity: 1;
+        transform: translate3d(-50%, 0, 0) scale(1);
+      }
+
+      .calculated.calculating .loadingarea {
+        pointer-events: none;
+        transform: translate3d(-50%, 0, 0) scale(0.9);
+        opacity: 0;
+      }
+
+      .calculated.calculating .calculatebutton {
+        pointer-events: none;
+        opacity: 0;
+        transform: translate3d(-50%, 0, 0) scale(0.9);
+      }
     </style>
   </head>
 
@@ -518,17 +619,39 @@
         <div class="calculatetext" onclick="calculate()">Calculate!</div>
         <div class="calculatespacer"></div>
         <div class="calculateaddti">
-          <div class="iterationcount">
-            Iteration:&nbsp;&nbsp;&nbsp;
-            <input type="number" class="inputiter" oninput="this.checkValidity()" step="1" min=1 max=1000 />
+          <div class="antcount">
+            Ant:&nbsp;&nbsp;&nbsp;
+            <input type="number" class="inputants" oninput="this.checkValidity()" step="1" min="1" max="1000" />
           </div>
           <div class="evaporationval">
             Evaporation:&nbsp;&nbsp;&nbsp;
-            <input type="number" class="inputevap" oninput="this.checkValidity()" step="0.1" min=0 max=0.9 />
+            <input type="number" class="inputevap" oninput="this.checkValidity()" step="0.1" min="0" max="0.9" />
+          </div>
+          <div class="iterationcount">
+            Iteration:&nbsp;&nbsp;&nbsp;
+            <input type="number" class="inputiter" oninput="this.checkValidity()" step="1" min="1" max="1000" />
           </div>
         </div>
       </div>
-      <div class="resultarea">Distance: 20</div>
+      <div class="loadingarea">Calculating...</div>
+      <div class="resultarea">
+        <div class="resultdist"></div>
+        <div class="resultspacer"></div>
+        <div class="resultaddti">
+          <div class="antresult">
+            Ant:&nbsp;&nbsp;&nbsp;
+            <div class="output outputants"></div>
+          </div>
+          <div class="evaporationresult">
+            Evaporation:&nbsp;&nbsp;&nbsp;
+            <div class="output outputevap"></div>
+          </div>
+          <div class="iterationresult">
+            Iteration:&nbsp;&nbsp;&nbsp;
+            <div class="output outputiter"></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="hamburgeroverlay">
       <div class="hamburger" onclick="toggleNavbar()">
@@ -561,6 +684,7 @@
     ></script>
     <script src="./render.js"></script>
     <script src="./algorithm.js"></script>
+    <script src="./interface.js"></script>
     <script src="./main.js"></script>
   </body>
 </html>

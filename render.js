@@ -6,9 +6,9 @@ canvas.height = window.innerHeight;
 var paper = canvas.getContext("2d");
 
 var realmouse = {
-  x:undefined,
-  y:undefined
-}
+  x: undefined,
+  y: undefined,
+};
 
 var mouse = {
   x: undefined,
@@ -33,15 +33,13 @@ var DELTA_START = false;
 
 canvas.addEventListener("mousemove", (event) => {
   if (DELTA_START) {
-    MOVE_OFFSET.x = OLD_OFFSET.x + ((PAN_START.x - event.x)/SPACING);
-    MOVE_OFFSET.y = OLD_OFFSET.y + ((PAN_START.y - event.y)/SPACING);
+    MOVE_OFFSET.x = OLD_OFFSET.x + (PAN_START.x - event.x) / SPACING;
+    MOVE_OFFSET.y = OLD_OFFSET.y + (PAN_START.y - event.y) / SPACING;
 
     REAL_OFFSET = coordToCenteredAbs(MOVE_OFFSET);
   }
   realmouse.x = event.x;
   realmouse.y = event.y;
-  
-  
 });
 
 canvas.addEventListener("contextmenu", (event) => {
@@ -55,10 +53,10 @@ canvas.addEventListener("mousedown", (event) => {
     mouse.rclick = true;
   } else if (event.button == 1) {
     mouse.mclick = true;
-    PAN_START.x=event.x;
-    PAN_START.y=event.y;
-    OLD_OFFSET.x=MOVE_OFFSET.x;
-    OLD_OFFSET.y=MOVE_OFFSET.y;
+    PAN_START.x = event.x;
+    PAN_START.y = event.y;
+    OLD_OFFSET.x = MOVE_OFFSET.x;
+    OLD_OFFSET.y = MOVE_OFFSET.y;
     DELTA_START = true;
   }
 });
@@ -140,36 +138,34 @@ function coordToCenteredAbs(coord) {
 }
 
 function coordToCentered(coord) {
-  let off = {x:-MOVE_OFFSET.x, y:MOVE_OFFSET.y};
+  let off = { x: -MOVE_OFFSET.x, y: MOVE_OFFSET.y };
   return { x: SPACING * (coord.x + off.x), y: SPACING * (coord.y + off.y) };
 }
 
 function coordToLineCentered(coord) {
-  let off = {x:-MOVE_OFFSET.x, y:MOVE_OFFSET.y};
+  let off = { x: -MOVE_OFFSET.x, y: MOVE_OFFSET.y };
   return { x: LINE_SPACING * (coord.x + off.x), y: LINE_SPACING * (coord.y + off.y) };
 }
 
 //draw via converted coordinate
-function Line(s, e, c, w = 1) {
-  this.s = s;
-  this.ts = coordToCentered(s);
-  this.e = e;
-  this.te = coordToCentered(e);
-  this.c = c;
-  this.w = w;
-
-  this.draw = () => {
+class Line {
+  constructor(s, e, c, w = 1) {
+    this.s = s;
+    this.ts = coordToCentered(s);
+    this.e = e;
+    this.te = coordToCentered(e);
+    this.c = c;
+    this.w = w;
+  }
+  draw() {
     paper.beginPath();
-    // paper.moveTo(center.x + this.ts.x - MOVE_OFFSET.x, center.y + -this.ts.y - MOVE_OFFSET.y);
-    // paper.lineTo(center.x + this.te.x - MOVE_OFFSET.x, center.y + -this.te.y - MOVE_OFFSET.y);
     paper.moveTo(CENTER.x + this.ts.x, CENTER.y + -this.ts.y);
     paper.lineTo(CENTER.x + this.te.x, CENTER.y + -this.te.y);
     paper.strokeStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
     paper.lineWidth = (LINE_SPACING / 75) * this.w;
     paper.stroke();
-  };
-
-  this.update = () => {
+  }
+  update() {
     let calcs = coordToLineCentered(this.s);
     let calce = coordToLineCentered(this.e);
     this.ts.x += (calcs.x - this.ts.x) * SPEED;
@@ -177,28 +173,28 @@ function Line(s, e, c, w = 1) {
     this.te.x += (calce.x - this.te.x) * SPEED;
     this.te.y += (calce.y - this.te.y) * SPEED;
     this.draw();
-  };
+  }
 }
 
 //draw via converted coordinate
-function Path(s, e, c, w = 1) {
-  this.s = s;
-  this.ts = coordToCentered(s);
-  this.e = e;
-  this.te = coordToCentered(e);
-  this.c = c;
-  this.w = w;
-  this.d = Math.sqrt(Math.pow(e.y-s.y,2)+Math.pow(e.x-s.x,2));
+class PathLine {
+  constructor(s, e, c, w = 1) {
+    this.s = s;
+    this.ts = coordToCentered(s);
+    this.e = e;
+    this.ste = coordToCentered(s);
+    this.te = coordToCentered(e);
+    this.c = c;
+    this.w = w;
+    this.d = Math.sqrt(Math.pow(e.y - s.y, 2) + Math.pow(e.x - s.x, 2));
+    this.st = false;
+  }
 
-  this.draw = () => {
-    // let offsx = center.x + this.ts.x - MOVE_OFFSET.x;
-    // let offsy = center.y + -this.ts.y - MOVE_OFFSET.y;
-    // let offex = center.x + this.te.x - MOVE_OFFSET.x;
-    // let offey = center.y + -this.te.y - MOVE_OFFSET.y;
-    let offsx = CENTER.x + this.ts.x ;
+  draw() {
+    let offsx = CENTER.x + this.ts.x;
     let offsy = CENTER.y + -this.ts.y;
-    let offex = CENTER.x + this.te.x ;
-    let offey = CENTER.y + -this.te.y;
+    let offex = CENTER.x + this.ste.x;
+    let offey = CENTER.y + -this.ste.y;
     paper.beginPath();
     paper.moveTo(offsx, offsy);
     paper.lineTo(offex, offey);
@@ -210,38 +206,49 @@ function Path(s, e, c, w = 1) {
     paper.fillStyle = "rgba(255,255,255,1)";
     paper.strokeStyle = "rgba(0,0,0,1)";
     paper.lineWidth = (LINE_SPACING / 300) * this.w;
-    paper.fillText(this.d.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
-    paper.strokeText(this.d.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
-  };
+    paper.fillText(this.d.toFixed(2), offsx - (offsx - offex) / 2, offsy - (offsy - offey) / 2);
+    paper.strokeText(this.d.toFixed(2), offsx - (offsx - offex) / 2, offsy - (offsy - offey) / 2);
+  }
 
-  this.update = () => {
+  update() {
     let calcs = coordToLineCentered(this.s);
     let calce = coordToLineCentered(this.e);
     this.ts.x += (calcs.x - this.ts.x) * SPEED;
     this.ts.y += (calcs.y - this.ts.y) * SPEED;
     this.te.x += (calce.x - this.te.x) * SPEED;
     this.te.y += (calce.y - this.te.y) * SPEED;
+    if (!this.st) {
+      this.ste.x += ((calce.x - this.ste.x) * SPEED) / 1.5;
+      this.ste.y += ((calce.y - this.ste.y) * SPEED) / 1.5;
+      if (Math.abs(calce.x - this.ste.x) < 10) {
+        this.st = true;
+      }
+    }else{
+      this.ste.x = this.te.x;
+      this.ste.y = this.te.y;
+    }
     this.draw();
-  };
+  }
 }
 
 //draw via converted coordinate
-function Circle(p, c) {
-  this.p = p;
-  this.t = coordToCentered(p);
-  this.c = c;
-  this.tc = c;
-  this.r = ADDRESS_RADIUS;
+class Circle {
+  constructor(p, c) {
+    this.p = p;
+    this.t = coordToCentered(p);
+    this.c = c;
+    this.tc = c;
+    this.r = ADDRESS_RADIUS;
+  }
 
-  this.draw = () => {
+  draw() {
     paper.beginPath();
-    // paper.arc(center.x + this.t.x - MOVE_OFFSET.x, center.y - this.t.y - MOVE_OFFSET.y, this.r, 0, 2 * Math.PI);
-    paper.arc(CENTER.x + this.t.x , CENTER.y - this.t.y, this.r, 0, 2 * Math.PI);
+    paper.arc(CENTER.x + this.t.x, CENTER.y - this.t.y, this.r, 0, 2 * Math.PI);
     paper.fillStyle = `rgba(${this.tc.r},${this.tc.g},${this.tc.b},${this.tc.a})`;
     paper.fill();
-  };
+  }
 
-  this.update = () => {
+  update() {
     let calc = coordToCentered(this.p);
     this.t.x += (calc.x - this.t.x) * SPEED;
     this.t.y += (calc.y - this.t.y) * SPEED;
@@ -251,11 +258,11 @@ function Circle(p, c) {
     this.tc.b += (this.c.b - this.tc.b) * SPEED;
     this.tc.a += (this.c.a - this.tc.a) * SPEED;
     this.draw();
-  };
+  }
 
-  this.setPos = (p) => {
+  setPos(p) {
     this.p = p;
-  };
+  }
 }
 
 function generateGrids() {
@@ -276,9 +283,9 @@ function generateGrids() {
 function animate() {
   requestAnimationFrame(animate);
   paper.clearRect(0, 0, innerWidth, innerHeight);
-  mouse.x = realmouse.x + MOVE_OFFSET.x*SPACING;
-  mouse.y = realmouse.y + MOVE_OFFSET.y*SPACING;
-  CENTER = { x: (window.innerWidth / 2), y: (window.innerHeight / 2)};
+  mouse.x = realmouse.x + MOVE_OFFSET.x * SPACING;
+  mouse.y = realmouse.y + MOVE_OFFSET.y * SPACING;
+  CENTER = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
   let spawncoord = mouseToCoord(mouse);
   circleCursor.setPos(spawncoord);
 
@@ -290,10 +297,8 @@ function animate() {
     clearRoute();
     removeCityNode(spawncoord);
     circleCursor.c = { r: 255, g: 0, b: 0, a: 1.0 };
-
   } else if (mouse.mclick) {
     canvas.style.cursor = "grab";
-    
   } else {
     canvas.style.cursor = "pointer";
     circleCursor.c = { r: 0, g: 0, b: 255, a: 1.0 };
@@ -309,12 +314,11 @@ function animate() {
   grids.forEach((element) => {
     element.update();
   });
-  circles.forEach((element) => {
-    element.update();
+  cities.forEach((element) => {
+    element.circle_element.update();
   });
   paths.forEach((element) => {
     element.update();
   });
   circleCursor.update();
 }
-
