@@ -16,7 +16,7 @@ private:
 	bool status;
 	string name;
 
-public :
+public:
 	Address(float x = 0, float y = 0, int pheromone = 1, bool status = 0, string name = "ADDRESSNAME") {
 		this->x = x;
 		this->y = y;
@@ -65,6 +65,12 @@ public:
 		return travelledAddress.front();
 	}
 
+	void displayPath() {
+		for (int i = 0; i < travelledAddress.size(); i++)
+		{
+			cout << "[" << travelledAddress[i] << "]";
+		}
+	}
 	void clearTravelledAddress() {
 		travelledAddress.clear();
 	}
@@ -102,7 +108,7 @@ public:
 	}
 };
 
-void displayAddress(vector<Address>& address) {
+void displayAddress(vector<Address> address) {
 	for (int i = 0; i < address.size(); i++)
 	{
 		cout << i + 1 << ". "; address[i].displayAddress();
@@ -192,7 +198,7 @@ void addressInitialization(vector<Address>& address) {
 	address.push_back(Address(18, -24, 1, false, "AD"));
 }
 
-void antsInitialization(vector<Address>& address, vector<Ant>& ants) {
+void antsInitialization(vector<Address> address, vector<Ant>& ants) {
 	Ant newAnt;
 	// menaruh semut di tiap address
 	for (int i = 0; i < address.size(); i++)
@@ -202,24 +208,13 @@ void antsInitialization(vector<Address>& address, vector<Ant>& ants) {
 	}
 }
 
-void antsReset(vector<Address>& address, vector<Ant>& ants) {
-	for (int i = 0; i < ants.size(); i++)
-	{
-		ants[i].clearTravelledAddress();
-	}
-	for (int i = 0; i < address.size(); i++)
-	{
-		ants[i].addTravelledAddress(i);
-	}
-}
-
 void displayAntsCurrentLocation(vector<Ant> ants, vector<Address> address, int index) {
 	ants[index].displayCurrentAddress(address);
 }
 
-void initializePheromoneMatrix(vector<Address> address, vector<vector<int>>& pheromoneMatrix) {
+void initializePheromoneMatrix(vector<Address> address, vector<vector<float>>& pheromoneMatrix) {
 	for (int i = 0; i < address.size(); i++) {
-		vector<int> temp;
+		vector<float> temp;
 		for (int j = 0; j < address.size(); j++) {
 			if (i != j) {
 				temp.push_back(1);
@@ -234,6 +229,15 @@ void initializePheromoneMatrix(vector<Address> address, vector<vector<int>>& phe
 	}
 }
 
+void displayPheromoneMatrix(vector<vector<float>> pheromoneMatrix) {
+	for (int i = 0; i < pheromoneMatrix.size(); i++) {
+		for (int j = 0; j < pheromoneMatrix[i].size(); j++) {
+			cout << "[" << pheromoneMatrix[i][j] << "]";
+		}
+		cout << endl << endl;
+	}
+}
+
 float samePathCost(int x, int y, vector<Ant> ants, vector<Address> address) {
 	float totalCost = 0;
 	for (int i = 0; i < ants.size(); i++)
@@ -245,10 +249,10 @@ float samePathCost(int x, int y, vector<Ant> ants, vector<Address> address) {
 	return totalCost;
 }
 
-void updatePheromoneMatrix(vector<vector<int>>& pheromoneMatrix, vector<Address> address, float evaporate, vector<Ant> ants) {
+void updatePheromoneMatrix(vector<vector<float>>& pheromoneMatrix, vector<Address> address, float evaporate, vector<Ant> ants) {
 	float temp_pheromone;
 	for (int y = 0; y < pheromoneMatrix.size(); y++) {
-		for (int z = 0; z < pheromoneMatrix.size(); z++) {
+		for (int z = 0; z < pheromoneMatrix[y].size(); z++) {
 			if (y != z) {
 				temp_pheromone = evaporate * pheromoneMatrix[y][z] + samePathCost(y, z, ants, address);
 				pheromoneMatrix[y][z] = temp_pheromone;
@@ -257,8 +261,8 @@ void updatePheromoneMatrix(vector<vector<int>>& pheromoneMatrix, vector<Address>
 	}
 }
 
-float calculateProbability(int origin_address, int destination_address, vector<vector<int>> pheromoneMatrix, vector<Address> address) {
-	float alpha = 1 , beta = 2;
+float calculateProbability(int origin_address, int destination_address, vector<vector<float>> pheromoneMatrix, vector<Address> address) {
+	float alpha = 1, beta = 2;
 	return pow(pheromoneMatrix[origin_address][destination_address], alpha) * pow(1 / euclideanDistance(address[origin_address].getOrdinat(), address[origin_address].getAbsis(), address[destination_address].getOrdinat(), address[destination_address].getAbsis()), beta);
 }
 
@@ -278,7 +282,7 @@ int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAd
 	for (int i = 0; i < probabilityPercentage.size(); i++)
 	{
 		offset += (probabilityPercentage[i] / totalProbabilityPercentage);
-		cout << offset << " <> " << randNumber << "\n";
+		//cout << offset << " <> " << randNumber << "\n";
 		if (offset >= randNumber) {
 			return probabilityAddressIndex[i];
 		}
@@ -309,12 +313,13 @@ int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAd
 
 float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float evaporate) {
 	vector<float> iterationBestCosts;
-	vector<vector<int>> pheromoneMatrix;
+	vector<vector<float>> pheromoneMatrix;
 	initializePheromoneMatrix(address, pheromoneMatrix);
 
 	for (int x = 0; x < iteration; x++)
 	{
-		antsReset(address, ants);
+		vector<Ant> ants;
+		antsInitialization(address, ants);
 
 		int count = 0;
 		while (count != 30) {
@@ -323,16 +328,17 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 				vector<float> probabilityPercentage;
 				vector<int> probabilityAddressIndex;
 				for (int j = 0; j < address.size(); j++) {
-					if (j != ants[i].getStartingAddress() && ants[i].checkTravelledAddress(j) == false) {
-						cout << x << " " << count << " " << i << " " << j << endl;
+					if (j != i && ants[i].checkTravelledAddress(j) == false) {
+						//cout << x << " " << count << " " << i << " " << j << endl;
 						float tempProbability = calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address);
-						cout << tempProbability << " ";
+						//cout << tempProbability << "<> ";
 						probabilityPercentage.push_back(tempProbability);
 						probabilityAddressIndex.push_back(j);
 					}
 				}
-				cout << "\nprobalength-" << probabilityPercentage.size() << "\n";
+				//cout << "\nprobalength-" << probabilityPercentage.size() << "\n";
 				//cout << "done1\n";
+
 				if (probabilityPercentage.size() > 0) {
 					if (roulleteWheel(probabilityPercentage, probabilityAddressIndex) == -1) {
 						system("PAUSE");
@@ -340,10 +346,11 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 					ants[i].addTravelledAddress(roulleteWheel(probabilityPercentage, probabilityAddressIndex));
 				}
 				else {
-					break;
+					ants[i].addTravelledAddress(ants[i].getStartingAddress());
 				}
+				//ants[i].displayPath();
 			}
-			cout << "antleng-" << ants.size() << "\n";
+			//cout << "antleng-" << ants.size() << "\n";
 			count++;
 		}
 
@@ -364,12 +371,17 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 		//iterationBestCosts.robabilyush_back(bestCost);
 
 		// update pheromoneMatrix
+		//cout << endl;
+		//displayPheromoneMatrix(pheromoneMatrix);
 		updatePheromoneMatrix(pheromoneMatrix, address, evaporate, ants);
+		//cout << endl;
+		//displayPheromoneMatrix(pheromoneMatrix);
+		cout << x << endl;
 	}
 
 	// setelah selesai iterasi, dicari cost yang paling terkecil
 	float bestCostOverall = 0;
-	for (int i = 0; i < ants.size(); i++)
+	for (int i = 0; i < address.size(); i++)
 	{
 		if (i == 0) {
 			bestCostOverall = ants[i].getTotalCost(address);
@@ -406,7 +418,7 @@ void main() {
 
 		hiddenMessage
 
-		cout << "Input menu: ";
+			cout << "Input menu: ";
 		int menu; cin >> menu;
 
 		if (menu == 0) {
