@@ -94,9 +94,9 @@ public:
 	}
 	float getTotalCost(vector<Address> address) {
 		float totalCost = 0;
-		for (int i = 0; i < travelledAddress.size(); i++)
+		for (int i = 0; i < travelledAddress.size() - 1; i++)
 		{
-			totalCost += euclideanDistance(address[i].getOrdinat(), address[i].getAbsis(), address[i + 1].getOrdinat(), address[i + 1].getAbsis());
+			totalCost += euclideanDistance(address[travelledAddress[i]].getOrdinat(), address[travelledAddress[i]].getAbsis(), address[travelledAddress[i + 1]].getOrdinat(), address[travelledAddress[i + 1]].getAbsis());
 		}
 		return totalCost;
 	}
@@ -272,12 +272,13 @@ float getTotalProbabilityPercentage(vector<float> probabilityPercentage) {
 }
 
 int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAddressIndex) {
+	//aman
 	float randNumber = (float)rand() / RAND_MAX, offset = 0;
 	float totalProbabilityPercentage = getTotalProbabilityPercentage(probabilityPercentage);
 	for (int i = 0; i < probabilityPercentage.size(); i++)
 	{
 		offset += (probabilityPercentage[i] / totalProbabilityPercentage);
-		if (offset > randNumber) {
+		if (offset >= randNumber) {
 			return probabilityAddressIndex[i];
 		}
 	}
@@ -322,15 +323,21 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 				vector<int> probabilityAddressIndex;
 				for (int j = 0; j < address.size(); j++) {
 					if (j != ants[i].getStartingAddress() && ants[i].checkTravelledAddress(j) == false) {
-						cout << x << " " << count << " " << i << " " << j << endl;
+						//cout << x << " " << count << " " << i << " " << j << endl;
 						probabilityPercentage.push_back(calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address));
 						probabilityAddressIndex.push_back(j);
 					}
 				}
-				cout << "done1\n";
-				ants[i].addTravelledAddress(roulleteWheel(probabilityPercentage, probabilityAddressIndex));
-				cout << "done2\n";
+				cout << "probalength-" << probabilityPercentage.size() << "\n";
+				//cout << "done1\n";
+				if (probabilityPercentage.size() > 0) {
+					ants[i].addTravelledAddress(roulleteWheel(probabilityPercentage, probabilityAddressIndex));
+				}
+				else {
+					break;
+				}
 			}
+			cout << "antleng-" << ants.size() << "\n";
 			count++;
 		}
 

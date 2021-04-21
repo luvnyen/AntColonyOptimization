@@ -121,7 +121,7 @@ function updateCoordDisplay() {
 
   curtrans[0] += (DISP_POS.x - curtrans[0]) * SPEED;
   curtrans[1] += (-DISP_POS.y - curtrans[1]) * SPEED;
-  
+
   document.querySelector(".coordbox").style.transform = `translate3d(${curtrans[0]}px,${curtrans[1] - SPACING / 20}px,0)`;
 }
 
@@ -188,6 +188,7 @@ function Path(s, e, c, w = 1) {
   this.te = coordToCentered(e);
   this.c = c;
   this.w = w;
+  this.d = Math.sqrt(Math.pow(e.y-s.y,2)+Math.pow(e.x-s.x,2));
 
   this.draw = () => {
     // let offsx = center.x + this.ts.x - MOVE_OFFSET.x;
@@ -198,7 +199,6 @@ function Path(s, e, c, w = 1) {
     let offsy = CENTER.y + -this.ts.y;
     let offex = CENTER.x + this.te.x ;
     let offey = CENTER.y + -this.te.y;
-    let dist = Math.sqrt(Math.pow(e.y-s.y,2)+Math.pow(e.x-s.x,2));
     paper.beginPath();
     paper.moveTo(offsx, offsy);
     paper.lineTo(offex, offey);
@@ -210,8 +210,8 @@ function Path(s, e, c, w = 1) {
     paper.fillStyle = "rgba(255,255,255,1)";
     paper.strokeStyle = "rgba(0,0,0,1)";
     paper.lineWidth = (LINE_SPACING / 300) * this.w;
-    paper.fillText(dist.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
-    paper.strokeText(dist.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
+    paper.fillText(this.d.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
+    paper.strokeText(this.d.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
   };
 
   this.update = () => {

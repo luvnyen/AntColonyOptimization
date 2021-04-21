@@ -4,6 +4,8 @@ var circles = [];
 var circleCursor = new Circle({ x: 0, y: 0 }, { r: 0, g: 0, b: 255, a: 1.0 });
 var navbarStatus = false;
 
+
+
 function addCityNode(spawncoord) {
   if (
     circles.every((element) => {
@@ -34,15 +36,22 @@ function clearAll() {
   circles = [];
   paths = [];
   MOVE_OFFSET = {x:0 , y:0};
+  document.querySelector("body").classList.remove("calculated");
 }
 
 function calculate() {
+  let iterdata = parseInt(document.querySelector(".inputiter").value);
+  let evapdata = parseFloat(document.querySelector(".inputevap").value);
   paths = [];
+  let dist = 0;
   circles.forEach((_element, index) => {
     if (circles.length > 1 && index < circles.length - 1) {
       paths.push(new Path(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
+      dist+=paths[paths.length-1].d;
     }
   });
+  document.querySelector(".resultarea").innerHTML = `Distance: ${dist.toFixed(2)}`;
+  document.querySelector("body").classList.add("calculated");
 }
 
 function openAddCities() {
@@ -59,32 +68,36 @@ function closeAddCities() {
 function newCitiesElement() {
   let newelementstr = `<div class="newcity">
   <div class="newcity-xplace">X:&nbsp;&nbsp;&nbsp;
-      <input type="number" class="inputnewx" step=1>
+      <input type="number" class="inputnewx" oninput="this.checkValidity()" step=1>
   </div>
   <div class="newcity-yplace">Y:&nbsp;&nbsp;&nbsp;
-    <input type="number" class="inputnewy" step=1>
+    <input type="number" class="inputnewy" oninput="this.checkValidity()" step=1>
   </div>
   <div class="newcity-cancel" onclick="removeNewCitiesElement(this)">✖</div>
 </div>`;
   let parser = new DOMParser();
   let newelement = parser.parseFromString(newelementstr, "text/html").querySelector(".newcity");
+  // newelement.querySelector(".inputnewx").defaultValue = 0;
+  // newelement.querySelector(".inputnewy").defaultValue = 0;
   document.querySelector(".addcitieslist").append(newelement);
 }
 
 function newCitiesElementData(x, y) {
   let newelementstr = `<div class="newcity">
   <div class="newcity-xplace">X:&nbsp;&nbsp;&nbsp;
-      <input type="number" class="inputnewx" step=1>
+      <input type="number" class="inputnewx" oninput="this.checkValidity()" step=1>
   </div>
   <div class="newcity-yplace">Y:&nbsp;&nbsp;&nbsp;
-    <input type="number" class="inputnewy" step=1>
+    <input type="number" class="inputnewy" oninput="this.checkValidity()" step=1>
   </div>
   <div class="newcity-cancel" onclick="removeNewCitiesElement(this)">✖</div>
 </div>`;
   let parser = new DOMParser();
   let newelement = parser.parseFromString(newelementstr, "text/html").querySelector(".newcity");
-  newelement.querySelector(".inputnewx").value = x;
-  newelement.querySelector(".inputnewy").value = y;
+  // newelement.querySelector(".inputnewx").defaultValue = 0;
+  // newelement.querySelector(".inputnewy").defaultValue = 0;
+    newelement.querySelector(".inputnewx").value = x;
+    newelement.querySelector(".inputnewy").value = y;
   document.querySelector(".addcitieslist").append(newelement);
 }
 
@@ -139,9 +152,10 @@ function addCitiesToList() {
   if(data.length > 0){
     let midx = min.x + (max.x - min.x)/2;
     let midy = min.x + (max.y - min.y)/2;
-    console.log(midx,midy);
-    MOVE_OFFSET = {x: midx, y: midy};
+    if(!Number.isNaN(midx) && !Number.isNaN(midy))
+      MOVE_OFFSET = {x: midx, y: midy};
   }
+  clearRoute();
   closeAddCities();
 }
 
@@ -151,9 +165,13 @@ function removeNewCitiesElement(el) {
 
 function clearRoute() {
   paths = [];
+  document.querySelector("body").classList.remove("calculated");
 }
 
 window.onload = () => {
+  document.querySelector(".inputiter").defaultValue = 1;
+  document.querySelector(".inputevap").defaultValue = 1;
+
   animate();
   generateGrids();
 };
