@@ -39,7 +39,7 @@ function calculate() {
   paths = [];
   circles.forEach((_element, index) => {
     if (circles.length > 1 && index < circles.length - 1) {
-      paths.push(new Line(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
+      paths.push(new Path(circles[index].p, circles[index + 1].p, { r: 0, g: 0, b: 0, a: 1 }, 10));
     }
   });
 }

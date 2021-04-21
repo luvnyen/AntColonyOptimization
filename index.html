@@ -129,7 +129,7 @@
         display: grid;
         place-items: center;
         position: absolute;
-        pointer-events: auto;
+        pointer-events: none;
         font-size: 30px;
         font-weight: 400;
         bottom: 25px;
@@ -140,12 +140,15 @@
         border-radius: 7px;
         cursor: pointer;
       }
+      .ham-active .clearallbutton {
+        pointer-events: auto;
+      }
 
       .clearroutebutton {
         display: grid;
         place-items: center;
         position: absolute;
-        pointer-events: auto;
+        pointer-events: none;
         font-size: 30px;
         font-weight: 400;
         bottom: 25px;
@@ -156,12 +159,15 @@
         border-radius: 7px;
         cursor: pointer;
       }
+      .ham-active .clearroutebutton {
+        pointer-events: auto;
+      }
 
       .addmultbutton {
         display: grid;
         place-items: center;
         position: absolute;
-        pointer-events: auto;
+        pointer-events: none;
         font-size: 30px;
         font-weight: 400;
         top: 25px;
@@ -172,12 +178,15 @@
         border-radius: 7px;
         cursor: pointer;
       }
+      .ham-active .addmultbutton {
+        pointer-events: auto;
+      }
 
       .calculatebutton {
         display: grid;
         place-items: center;
         position: absolute;
-        pointer-events: auto;
+        pointer-events: none;
         font-size: 50px;
         font-weight: 400;
         bottom: 25px;
@@ -188,6 +197,9 @@
         color: white;
         border-radius: 7px;
         cursor: pointer;
+      }
+      .ham-active .calculatebutton {
+        pointer-events: auto;
       }
 
       .hamburgeroverlay {

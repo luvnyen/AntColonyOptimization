@@ -162,6 +162,47 @@ function Line(s, e, c, w = 1) {
 }
 
 //draw via converted coordinate
+function Path(s, e, c, w = 1) {
+  this.s = s;
+  this.ts = coordToCentered(s);
+  this.e = e;
+  this.te = coordToCentered(e);
+  this.c = c;
+  this.w = w;
+
+  this.draw = () => {
+    let offsx = center.x + this.ts.x - MOVE_OFFSET.x;
+    let offsy = center.y + -this.ts.y - MOVE_OFFSET.y;
+    let offex = center.x + this.te.x - MOVE_OFFSET.x;
+    let offey = center.y + -this.te.y - MOVE_OFFSET.y;
+    let dist = Math.sqrt(Math.pow(e.y-s.y,2)+Math.pow(e.x-s.x,2));
+    paper.beginPath();
+    paper.moveTo(offsx, offsy);
+    paper.lineTo(offex, offey);
+    paper.strokeStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
+    paper.lineWidth = (LINE_SPACING / 75) * this.w;
+    paper.stroke();
+    paper.font = `700 ${LINE_SPACING}px Open Sans`;
+    paper.textAlign = "center";
+    paper.fillStyle = "rgba(255,255,255,1)";
+    paper.strokeStyle = "rgba(0,0,0,1)";
+    paper.lineWidth = (LINE_SPACING / 300) * this.w;
+    paper.fillText(dist.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
+    paper.strokeText(dist.toFixed(2), offsx-(offsx-offex)/2, offsy-(offsy-offey)/2);
+  };
+
+  this.update = () => {
+    let calcs = coordToLineCentered(this.s);
+    let calce = coordToLineCentered(this.e);
+    this.ts.x += (calcs.x - this.ts.x) * SPEED;
+    this.ts.y += (calcs.y - this.ts.y) * SPEED;
+    this.te.x += (calce.x - this.te.x) * SPEED;
+    this.te.y += (calce.y - this.te.y) * SPEED;
+    this.draw();
+  };
+}
+
+//draw via converted coordinate
 function Circle(p, c) {
   this.p = p;
   this.t = coordToCentered(p);
@@ -242,10 +283,10 @@ function animate() {
   grids.forEach((element) => {
     element.update();
   });
-  paths.forEach((element) => {
+  circles.forEach((element) => {
     element.update();
   });
-  circles.forEach((element) => {
+  paths.forEach((element) => {
     element.update();
   });
   circleCursor.update();
