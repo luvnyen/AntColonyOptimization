@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <time.h>
+#include <stdlib.h>
 #define hiddenMessage cout << " /$$$$$$       /$$        /$$$$$$  /$$    /$$ /$$$$$$$$        /$$$$$$  /$$$$$$$ " << endl;cout << "|_  $$_/      | $$       /$$__  $$| $$   | $$| $$_____/       /$$__  $$| $$__  $$" << endl;cout << "  | $$        | $$      | $$  \\ $$| $$   | $$| $$            | $$  \\ $$| $$  \\ $$" << endl;cout << "  | $$        | $$      | $$  | $$|  $$ / $$/| $$$$$         | $$$$$$$$| $$$$$$$/" << endl;cout << "  | $$        | $$      | $$  | $$ \\  $$ $$/ | $$__/         | $$__  $$| $$____/ " << endl;cout << "  | $$        | $$      | $$  | $$  \\  $$$/  | $$            | $$  | $$| $$      " << endl;cout << " /$$$$$$      | $$$$$$$$|  $$$$$$/   \\  $/   | $$$$$$$$      | $$  | $$| $$      " << endl;cout << "|______/      |________/ \\______/     \\_/    |________/      |__/  |__/|__/      " << endl << endl;
 
 using namespace std;
@@ -208,6 +209,14 @@ void antsInitialization(vector<Address> address, vector<Ant>& ants) {
 	}
 }
 
+void antsReset(vector<Address> address, vector<Ant>& ants) {
+	for (int i = 0; i < address.size(); i++)
+	{
+		ants[i].clearTravelledAddress();
+		ants[i].addTravelledAddress(i);
+	}
+}
+
 void displayAntsCurrentLocation(vector<Ant> ants, vector<Address> address, int index) {
 	ants[index].displayCurrentAddress(address);
 }
@@ -222,10 +231,8 @@ void initializePheromoneMatrix(vector<Address> address, vector<vector<float>>& p
 			else {
 				temp.push_back(0);
 			}
-			//cout << "[" << temp[j] << "]";
 		}
 		pheromoneMatrix.push_back(temp);
-		//cout << endl;
 	}
 }
 
@@ -288,27 +295,6 @@ int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAd
 		}
 	}
 	return -1;
-	/*vector<float> temp;
-	for (int i = 0; i < probabilityPercentage.size(); i++)
-	{
-		if (i == 0) {
-			temp.push_back(0);
-			temp.push_back(probabilityPercentage[i]);
-
-			if (randNumber >= 0 && randNumber <= probabilityPercentage[i]) {
-				return i;
-			}
-		}
-		else {
-			temp.push_back(temp.back());
-			temp.push_back(temp.back() + probabilityPercentage[i]);
-
-			if (randNumber >= temp[temp.size() - 2] && randNumber <= temp.back()) {
-				return i;
-			}
-		}
-	}
-	return -1;*/
 }
 
 float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float evaporate) {
@@ -318,8 +304,7 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 
 	for (int x = 0; x < iteration; x++)
 	{
-		vector<Ant> ants;
-		antsInitialization(address, ants);
+		antsReset(address, ants);
 
 		int count = 0;
 		while (count != 30) {
@@ -331,14 +316,10 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 					if (j != i && ants[i].checkTravelledAddress(j) == false) {
 						//cout << x << " " << count << " " << i << " " << j << endl;
 						float tempProbability = calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address);
-						cout << tempProbability << " ";
 						probabilityPercentage.push_back(tempProbability);
 						probabilityAddressIndex.push_back(j);
 					}
 				}
-				//cout << "\nprobalength-" << probabilityPercentage.size() << "\n";
-				//cout << "done1\n";
-
 				if (probabilityPercentage.size() > 0) {
 					if (roulleteWheel(probabilityPercentage, probabilityAddressIndex) == -1) {
 						system("PAUSE");
@@ -350,48 +331,30 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 				}
 				//ants[i].displayPath();
 			}
-			//cout << "antleng-" << ants.size() << "\n";
 			count++;
 		}
 
-		// setelah selesai iterasi per semut, dicari cost semut yang paling terkecil
-		//float bestCost = 0;
-		//for (int i = 0; i < ants.size(); i++) {
-		//	// return to the starting address
-		//	ants[i].addTravelledAddress(ants[i].getStartingAddress());
-		//	if (i == 0) {
-		//		bestCost = ants[i].getTotalCost(address);
-		//	}
-		//	else {
-		//		if (ants[i].getTotalCost(address) < bestCost) {
-		//			bestCost = ants[i].getTotalCost(address);
-		//		}
-		//	}
-		//}
-		//iterationBestCosts.robabilyush_back(bestCost);
-
-		// update pheromoneMatrix
-		//cout << endl;
-		//displayPheromoneMatrix(pheromoneMatrix);
 		updatePheromoneMatrix(pheromoneMatrix, address, evaporate, ants);
-		//cout << endl;
-		//displayPheromoneMatrix(pheromoneMatrix);
-		cout << x << endl;
 	}
 
 	// setelah selesai iterasi, dicari cost yang paling terkecil
 	float bestCostOverall = 0;
+	int antBestIndex = 0;
 	for (int i = 0; i < address.size(); i++)
 	{
 		if (i == 0) {
 			bestCostOverall = ants[i].getTotalCost(address);
+			antBestIndex = i;
 		}
 		else {
 			if (ants[i].getTotalCost(address) < bestCostOverall) {
 				bestCostOverall = ants[i].getTotalCost(address);
+				antBestIndex = i;
 			}
 		}
+		//cout << ants[i].getTotalCost(address) << endl;
 	}
+	ants[antBestIndex].displayPath(); cout << "\n";
 	return bestCostOverall;
 }
 
@@ -486,7 +449,8 @@ void main() {
 				}
 			}
 			antsInitialization(address, ants);
-			cout << beginACO(ants, address, iteration, evaporate);
+			cout << "Calculating... Please wait!\n";
+			cout << beginACO(ants, address, iteration, evaporate) << endl;
 
 			system("PAUSE");
 		}
