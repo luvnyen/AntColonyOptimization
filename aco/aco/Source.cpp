@@ -278,6 +278,7 @@ int roulleteWheel(vector<float> probabilityPercentage, vector<int> probabilityAd
 	for (int i = 0; i < probabilityPercentage.size(); i++)
 	{
 		offset += (probabilityPercentage[i] / totalProbabilityPercentage);
+		cout << offset << " <> " << randNumber << "\n";
 		if (offset >= randNumber) {
 			return probabilityAddressIndex[i];
 		}
@@ -323,14 +324,19 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 				vector<int> probabilityAddressIndex;
 				for (int j = 0; j < address.size(); j++) {
 					if (j != ants[i].getStartingAddress() && ants[i].checkTravelledAddress(j) == false) {
-						//cout << x << " " << count << " " << i << " " << j << endl;
-						probabilityPercentage.push_back(calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address));
+						cout << x << " " << count << " " << i << " " << j << endl;
+						float tempProbability = calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address);
+						cout << tempProbability << " ";
+						probabilityPercentage.push_back(tempProbability);
 						probabilityAddressIndex.push_back(j);
 					}
 				}
-				cout << "probalength-" << probabilityPercentage.size() << "\n";
+				cout << "\nprobalength-" << probabilityPercentage.size() << "\n";
 				//cout << "done1\n";
 				if (probabilityPercentage.size() > 0) {
+					if (roulleteWheel(probabilityPercentage, probabilityAddressIndex) == -1) {
+						system("PAUSE");
+					}
 					ants[i].addTravelledAddress(roulleteWheel(probabilityPercentage, probabilityAddressIndex));
 				}
 				else {
