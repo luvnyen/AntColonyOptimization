@@ -4,8 +4,6 @@ var circles = [];
 var circleCursor = new Circle({ x: 0, y: 0 }, { r: 0, g: 0, b: 255, a: 1.0 });
 var navbarStatus = false;
 
-
-
 function addCityNode(spawncoord) {
   if (
     circles.every((element) => {
@@ -170,7 +168,7 @@ function clearRoute() {
 
 window.onload = () => {
   document.querySelector(".inputiter").defaultValue = 1;
-  document.querySelector(".inputevap").defaultValue = 1;
+  document.querySelector(".inputevap").defaultValue = 0.9;
 
   animate();
   generateGrids();
