@@ -326,7 +326,7 @@ float beginACO(vector<Ant> ants, vector<Address> address, int iteration, float e
 					if (j != ants[i].getStartingAddress() && ants[i].checkTravelledAddress(j) == false) {
 						cout << x << " " << count << " " << i << " " << j << endl;
 						float tempProbability = calculateProbability(ants[i].getCurrentAddress(), j, pheromoneMatrix, address);
-						cout << tempProbability << " ";
+						cout <<"probability->"<< tempProbability << "<-probability";
 						probabilityPercentage.push_back(tempProbability);
 						probabilityAddressIndex.push_back(j);
 					}
