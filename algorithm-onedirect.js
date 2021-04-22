@@ -41,7 +41,7 @@ class Ant {
     // apakah melalui suatu jalan
     let result = false;
     this.paths.forEach((path_a) => {
-      if (path_a.isPathOf(path.city_a, path.city_b)) {
+      if (path_a.isOneOf(path.city_a) && path_a.isOneOf(path.city_b)) {
         result = true;
         return true;
       }
@@ -87,8 +87,8 @@ class Path {
     return Math.hypot(delta_y, delta_x);
   }
   //check kalau salah satu kota ada dalam path
-  isPathOf(city_a, city_b) {
-    return this.city_a.isSamePlace(city_a) && this.city_b.isSamePlace(city_b);
+  isOneOf(city) {
+    return this.city_a.isSamePlace(city) || this.city_b.isSamePlace(city);
   }
 }
 
@@ -99,7 +99,7 @@ class Map {
     this.map = [];
     // feromon terbesar buat render
     this.maxpheromones = 1;
-    // membuat map yang pathnya tidak menunjuk diri sendiri (xx A-A)
+    // membuat map yang pathnya tidak dobel (xx A-B B-A) dan path yang tidak menunjuk diri sendiri (xx A-A)
     cities.forEach((city_a) => {
       cities.forEach((city_b) => {
         // cek kalau kotanya sama
@@ -119,14 +119,14 @@ class Map {
     let result = false;
     // untuk setiap path dalam map
     this.map.some((path) => {
-      if (path.isPathOf(city_a, city_b)) {
+      if (path.isOneOf(city_a) && path.isOneOf(city_b)) {
         // jika menemukan jalan yang ujungnya sesuai dengan yang diminta
         // return jalan
         result = path;
         return true;
       }
     });
-    // return hasil
+    // jika tidak ketemu
     return result;
   }
 }
@@ -143,10 +143,8 @@ function rouletteWheel(pairs) {
   let result;
   pairs.some((pair) => {
     // jika jumlah probabilitas 0, semua memiliki probabilitas sama
-
     if (sum == 0) offset += 1 / pairs.length;
     else offset += pair.p / app_sum;
-
     if (offset > rand) {
       result = pair;
       return true;
@@ -194,7 +192,6 @@ function initializeACO() {
 
 // menjalankan simulasi
 function iterateACO() {
-
   ants = [];
   for (let i = 0; i < ANTS_VAR; i++) {
     ants.push(new Ant(cities[Math.floor(Math.random() * cities.length)]));
@@ -204,7 +201,7 @@ function iterateACO() {
   cities.forEach((_element, index) => {
     // untuk setiap semut
     ants.forEach((ant) => {
-      // jika bukan kota terakhir (ketika semua kota telah dikunjungi)
+      // jika bukan kota terakhir (ketika semua kota telak dikunjungi)
       if (index < cities.length - 1) {
         // untuk setiap kota
         // array probabilitias untuk roulete wheel
@@ -221,7 +218,7 @@ function iterateACO() {
         ant.goToCity(next_city);
       } else {
         // jika kota terakhir (ketika semua kota telak dikunjungi)
-        // pergi ke rumah
+        // pergi ke tempat awal
         ant.goToCity(ant.starting);
       }
     });
