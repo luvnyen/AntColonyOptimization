@@ -41,7 +41,7 @@ class Ant {
     // apakah melalui suatu jalan
     let result = false;
     this.paths.forEach((path_a) => {
-      if (path_a.oneOf(path.city_a) && path_a.oneOf(path.city_b)) {
+      if (path_a.isOneOf(path.city_a) && path_a.isOneOf(path.city_b)) {
         result = true;
         return true;
       }
@@ -54,7 +54,7 @@ class Ant {
     this.visited.push(city);
 
     // menambah jalan yang sudah dilewati
-    let newpath = new Path(this.current, city);
+    let newpath = map.getPath(this.current, city);
     this.paths.push(newpath);
 
     // menghitung distance ulang
@@ -87,7 +87,7 @@ class Path {
     return Math.hypot(delta_y, delta_x);
   }
   //check kalau salah satu kota ada dalam path
-  oneOf(city) {
+  isOneOf(city) {
     return this.city_a.isSamePlace(city) || this.city_b.isSamePlace(city);
   }
 }
@@ -97,6 +97,8 @@ class Map {
   constructor(cities) {
     // generate array yang merupakan setiap kemungkinan jalan dari 2 kota (map)
     this.map = [];
+    // feromon terbesar buat render
+    this.maxpheromones = 1;
     // membuat map yang pathnya tidak dobel (xx A-B B-A) dan path yang tidak menunjuk diri sendiri (xx A-A)
     cities.forEach((city_a) => {
       cities.forEach((city_b) => {
@@ -117,7 +119,7 @@ class Map {
     let result = false;
     // untuk setiap path dalam map
     this.map.some((path) => {
-      if (path.oneOf(city_a) && path.oneOf(city_b)) {
+      if (path.isOneOf(city_a) && path.isOneOf(city_b)) {
         // jika menemukan jalan yang ujungnya sesuai dengan yang diminta
         // return jalan
         result = path;
@@ -175,63 +177,58 @@ function updatePheromone() {
     });
     // set feromon baru
     path.pheromones = temp;
+    if (map.maxpheromones < temp) map.maxpheromones = temp;
   });
 }
 
-const ALPHA_VAR = 1;
-const BETA_VAR = 2;
-var map;
-var ants;
-var EVAPORATE_VAR = 0.55;
-var ITERATION_VAR = 50;
-var ANTS_VAR = 30;
-
 // masukkan data city
-function runACO(cities_list) {
+
+// mempersiapkan ACO
+function initializeACO() {
   // buat map (paths)
-  map = new Map(cities_list);
-
+  map = new Map(cities);
   ants = [];
-  var ant_count = ANTS_VAR;
+}
 
-  for (let iter = 0; iter < ITERATION_VAR; iter++) {
-    // initialisasi semut
-    ants = [];
-    for (let i = 0; i < ant_count; i++) {
-      ants.push(new Ant(cities_list[Math.floor(Math.random() * cities_list.length)]));
-    }
-
-    // untuk setiap kota
-    cities_list.forEach((_element, index) => {
-      // untuk setiap semut
-      ants.forEach((ant) => {
-        // jika bukan kota terakhir (ketika semua kota telak dikunjungi)
-        if (index < cities_list.length - 1) {
-          // untuk setiap kota
-          // array probabilitias untuk roulete wheel
-          let probability_pairs = [];
-          cities_list.forEach((city) => {
-            if (!ant.hasVisited(city)) {
-              // jika kotanya belum dikunjungi, hitung probabilitas
-              probability_pairs.push({ c: city, p: getProbability(ant.currentCity(), city) });
-            }
-          });
-          // ambil 1 dari array setelah dirandom
-          let next_city = rouletteWheel(probability_pairs);
-          // set kota selantjutnya
-          ant.goToCity(next_city);
-        } else {
-          // jika kota terakhir (ketika semua kota telak dikunjungi)
-          // pergi ke tempat awal
-          ant.goToCity(ant.starting);
-        }
-      });
-    });
-
-    //update feromon
-    updatePheromone();
+// menjalankan simulasi
+function iterateACO() {
+  ants = [];
+  for (let i = 0; i < ANTS_VAR; i++) {
+    ants.push(new Ant(cities[Math.floor(Math.random() * cities.length)]));
   }
 
+  // untuk setiap kota
+  cities.forEach((_element, index) => {
+    // untuk setiap semut
+    ants.forEach((ant) => {
+      // jika bukan kota terakhir (ketika semua kota telak dikunjungi)
+      if (index < cities.length - 1) {
+        // untuk setiap kota
+        // array probabilitias untuk roulete wheel
+        let probability_pairs = [];
+        cities.forEach((city) => {
+          if (!ant.hasVisited(city)) {
+            // jika kotanya belum dikunjungi, hitung probabilitas
+            probability_pairs.push({ c: city, p: getProbability(ant.currentCity(), city) });
+          }
+        });
+        // ambil 1 dari array setelah dirandom
+        let next_city = rouletteWheel(probability_pairs);
+        // set kota selantjutnya
+        ant.goToCity(next_city);
+      } else {
+        // jika kota terakhir (ketika semua kota telak dikunjungi)
+        // pergi ke tempat awal
+        ant.goToCity(ant.starting);
+      }
+    });
+  });
+  //update feromon
+  updatePheromone();
+}
+
+//mendapatkan semut terbaik
+function getBestAnt() {
   // sorting semut dari cost terkecil
   ants.sort((a, b) => {
     if (a.cost < b.cost) {
@@ -244,4 +241,13 @@ function runACO(cities_list) {
   });
   // return semut cost terkecil
   return ants[0];
+}
+
+// menjalankan fungsi keseluruhan
+function runACO() {
+  initializeACO();
+  for (let i = 0; i < ITERATION_VAR; i++) {
+    iterateACO();
+  }
+  return getBestAnt();
 }

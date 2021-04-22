@@ -156,13 +156,14 @@ class Line {
     this.te = coordToCentered(e);
     this.c = c;
     this.w = w;
+    this.tw = w;
   }
   draw() {
     paper.beginPath();
     paper.moveTo(CENTER.x + this.ts.x, CENTER.y + -this.ts.y);
     paper.lineTo(CENTER.x + this.te.x, CENTER.y + -this.te.y);
     paper.strokeStyle = `rgba(${this.c.r},${this.c.g},${this.c.b},${this.c.a})`;
-    paper.lineWidth = (LINE_SPACING / 75) * this.w;
+    paper.lineWidth = (LINE_SPACING / 75) * this.tw;
     paper.stroke();
   }
   update() {
@@ -172,7 +173,11 @@ class Line {
     this.ts.y += (calcs.y - this.ts.y) * SPEED;
     this.te.x += (calce.x - this.te.x) * SPEED;
     this.te.y += (calce.y - this.te.y) * SPEED;
+    this.tw += (this.w - this.tw) * SPEED;
     this.draw();
+  }
+  setWidth(neww) {
+    this.w = neww;
   }
 }
 
@@ -186,7 +191,7 @@ class PathLine {
     this.te = coordToCentered(e);
     this.c = c;
     this.w = w;
-    this.d = Math.sqrt(Math.pow(e.y - s.y, 2) + Math.pow(e.x - s.x, 2));
+    this.d = Math.hypot(e.y - s.y, e.x - s.x);
     this.st = false;
   }
 
@@ -205,9 +210,9 @@ class PathLine {
     paper.textAlign = "center";
     paper.fillStyle = "rgba(255,255,255,1)";
     paper.strokeStyle = "rgba(0,0,0,1)";
-    paper.lineWidth = (LINE_SPACING / 300) * this.w;
-    paper.fillText(this.d.toFixed(2), offsx - (offsx - offex) / 2, offsy - (offsy - offey) / 2);
+    paper.lineWidth = (LINE_SPACING / 4);
     paper.strokeText(this.d.toFixed(2), offsx - (offsx - offex) / 2, offsy - (offsy - offey) / 2);
+    paper.fillText(this.d.toFixed(2), offsx - (offsx - offex) / 2, offsy - (offsy - offey) / 2);
   }
 
   update() {
@@ -223,22 +228,36 @@ class PathLine {
       if (Math.abs(calce.x - this.ste.x) < 10) {
         this.st = true;
       }
-    }else{
+    } else {
       this.ste.x = this.te.x;
       this.ste.y = this.te.y;
     }
+    this.d = Math.hypot(this.e.y - this.s.y, this.e.x - this.s.x);
     this.draw();
+  }
+
+  setEnds(s, e) {
+    // let offs = Math.hypot(this.s.x - s.x, this.s.y - s.y);
+    // let offe = Math.hypot(this.s.x - e.x, this.s.y - e.y);
+    // if (offs < offe) {
+    //   this.s = s;
+    //   this.e = e;
+    // } else {
+    this.s = e;
+    this.e = s;
+    // }
   }
 }
 
 //draw via converted coordinate
 class Circle {
-  constructor(p, c) {
+  constructor(p, c, rm = 1) {
     this.p = p;
     this.t = coordToCentered(p);
     this.c = c;
     this.tc = c;
     this.r = ADDRESS_RADIUS;
+    this.rm = rm;
   }
 
   draw() {
@@ -252,7 +271,7 @@ class Circle {
     let calc = coordToCentered(this.p);
     this.t.x += (calc.x - this.t.x) * SPEED;
     this.t.y += (calc.y - this.t.y) * SPEED;
-    this.r += (ADDRESS_RADIUS - this.r) * SPEED;
+    this.r += (ADDRESS_RADIUS * this.rm - this.r) * SPEED;
     this.tc.r += (this.c.r - this.tc.r) * SPEED;
     this.tc.g += (this.c.g - this.tc.g) * SPEED;
     this.tc.b += (this.c.b - this.tc.b) * SPEED;
@@ -316,6 +335,9 @@ function animate() {
   });
   cities.forEach((element) => {
     element.circle_element.update();
+  });
+  pheromonepaths.forEach((element) => {
+    element.update();
   });
   paths.forEach((element) => {
     element.update();
