@@ -162,14 +162,14 @@ function intervalRealtime() {
 
   if (loopCount == 1) {
     map.map.forEach((path) => {
-      pheromonepaths.push(new Line({ x: path.city_a.x, y: path.city_a.y }, { x: path.city_b.x, y: path.city_b.y }, { r: 0, g: 0, b: 0, a: 1 }, 30 * (path.pheromones / map.maxpheromones)));
+      pheromonepaths.push(new Line({ x: path.city_a.x, y: path.city_a.y }, { x: path.city_b.x, y: path.city_b.y }, { r: 0, g: 0, b: 0, a: 1 }, 40 * (path.pheromones / map.maxpheromones)));
     });
     best_ants.paths.forEach((path) => {
       paths.push(new PathLine({ x: path.city_a.x, y: path.city_a.y }, { x: path.city_b.x, y: path.city_b.y }, { r: 200, g: 200, b: 0, a: 1 }, 10));
     });
   } else {
     map.map.forEach((path, index) => {
-      pheromonepaths[index].setWidth(30 * (path.pheromones / map.maxpheromones));
+      pheromonepaths[index].setWidth(40 * (path.pheromones / map.maxpheromones));
     });
     best_ants.paths.forEach((path, index) => {
       paths[index].setEnds({ x: path.city_a.x, y: path.city_a.y }, { x: path.city_b.x, y: path.city_b.y });
