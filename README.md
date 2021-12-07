@@ -9,5 +9,5 @@
 [Click here to see the simulation page](https://luvnyen.github.io/AntColonyOptimization/)
 
 
-### Screenshot
+### Preview
 ![UTS Kecerdasan Buatan - ACO](https://user-images.githubusercontent.com/56993480/145030915-7c938f8a-82f1-4c77-9a4a-54701a9afd74.png)
