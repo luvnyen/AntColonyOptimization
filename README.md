@@ -7,3 +7,6 @@
 <br>[Felicia Melody - C14190089](https://www.instagram.com/feliciamelodys/)
 <br><br>
 https://luvnyen.github.io/AntColonyOptimization/
+
+### Screenshot
+![Screenshot](UTS Kecerdasan Buatan - ACO.png)  
